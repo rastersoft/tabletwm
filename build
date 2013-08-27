@@ -1,0 +1,1 @@
+cc -g -Wall -o swm swm.c -lxcb -lxcb-util -lxcb-randr

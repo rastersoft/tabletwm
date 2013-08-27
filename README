@@ -1,0 +1,70 @@
+META
+--------------------
+Yet another minimalistic X11 WM. I made this from scratch as a hobby. Feedback
+is always appreciated :) cinolt.yk@gmail.com
+
+This is in the public domain.
+
+"swm" is not the most original untaken name out there, but this was not meant
+to go mainstream anyway. It is from "Super Window Manager", as I originally
+contrived the super key being rarely used in most X11 applications, and thought
+would be perfect for a window manager to handle.
+
+All windows under swm are intended to take up the entire screen; there are no
+window decorations whatsoever. swm is also controlled entirely by the keyboard
+(ideally with only one hand).
+
+When swm starts, it reads a runtime configuration file $HOME/.swmrc. This file
+specifies the "grabkey", as well as several "bindkeys". The grabkey is a key
+that while pressed, will take active control of the keyboard, enabling bindkeys
+to be pressed.
+
+.swmrc specifies the grabkey with a keycode. It specifies each bindkey with a
+keycode, a boolean "alpha switch", and a sh(ell) command line.
+
+Several things can happen when a bindkey is pressed:
+
+o If the bindkey is an "alphakey", then unconditionally execute its command
+line.
+o Otherwise, if the [S]hift ([S]witch) modifier is active, then move its
+assigned window, if any, to the top of the window stack.
+o Otherwise, if the [C]ontrol ([C]ommand) modifier is active, then execute its
+command line.
+o Otherwise, if the Mod_1 ([A]lt; [A]ssign) modifier is active, then assign the
+current top-level window to it.
+(The behavior is undefined when two or more of the Shift, Control, and Mod_1
+modifiers are active.)
+o Otherwise, if it is currently not assigned to a window, then execute its
+command line and designate itself to be assigned to the next mapped window.
+o Otherwise, if it is currently assigned to a window, then move its assigned
+window to the top of the window stack.
+
+swm takes input through a FIFO $HOME/.swmin, reading the first 4 bytes of each
+input, acting accordingly:
+
+quit: Quit swm
+dele: Delete top-most window
+alte: Alternate between first and second top-most windows
+circ: Circulate windows
+kill: Kill top-most window
+
+INSTALL
+--------------------
+This does not use GNU Autobloat. Use the build script provided as a starting
+point to build it for your particular system. It should build fine for any
+relatively recent (2011/11/28) UNIX-like build environment and libxcb/xcb-util.
+
+Once you've done that, make the FIFO (mkfifo $HOME/.swmin), then edit
+$HOME/.swmrc to your liking. The format is relatively simple; use the provided
+sample .swmrc and common sense. Keep in mind that keycodes vary across systems
+and that the null characters in .swmrc are intentional.
+
+Execute swm with your preferred method. One way is to have it executed in
+$HOME/.xinitrc.
+
+TODO
+--------------------
+o Maintain a local list of window stacking order rather than querying the root
+tree everytime.
+o More thorough ICCCM support
+o Fix bugs (random "phantom" window in firefox?)

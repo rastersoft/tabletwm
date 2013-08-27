@@ -290,7 +290,6 @@ int main(int ac,char *av[]) {
 				}
 			}
 		} else {
-		
 			switch(r) {
 				case (XCB_KEY_PRESS): {
 					xcb_key_press_event_t *ee=(xcb_key_press_event_t *)e;
@@ -379,7 +378,7 @@ int main(int ac,char *av[]) {
 						/* unassign any window assignment */
 						int j=256;
 						while(j) {
-							i--;
+							j--;
 							if (key[j].w==ee->window) {
 								key[j].w=0;
 								break;

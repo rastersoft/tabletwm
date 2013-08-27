@@ -431,6 +431,7 @@ int main(int ac,char *av[]) {
 					int i=0;
 					/* only modify the request if it is not transient */
 					xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_wm_transient_for,XCB_ATOM_WINDOW,0,1),0);
+					ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT;
 					if (r->length) {
 						int nx,ny,nw,nh;
 						nx=ee->x;
@@ -447,31 +448,15 @@ int main(int ac,char *av[]) {
 						} else {
 							nh=ee->height;
 						}
-						if (ee->value_mask&XCB_CONFIG_WINDOW_X) {
-							v[i++]=nx;
-						}
-						if (ee->value_mask&XCB_CONFIG_WINDOW_Y) {
-							v[i++]=ny;
-						}
-						if (ee->value_mask&XCB_CONFIG_WINDOW_WIDTH) {
-							v[i++]=nw;
-						}
-						if (ee->value_mask&XCB_CONFIG_WINDOW_HEIGHT) {
-							v[i++]=nh;
-						}
+						v[i++]=nx;
+						v[i++]=ny;
+						v[i++]=nw;
+						v[i++]=nh;
 					} else {
-						if (ee->value_mask&XCB_CONFIG_WINDOW_X) {
-							v[i++]=0;
-						}
-						if (ee->value_mask&XCB_CONFIG_WINDOW_Y) {
-							v[i++]=0;
-						}
-						if (ee->value_mask&XCB_CONFIG_WINDOW_WIDTH) {
-							v[i++]=width;
-						}
-						if (ee->value_mask&XCB_CONFIG_WINDOW_HEIGHT) {
-							v[i++]=height;
-						}
+						v[i++]=0;
+						v[i++]=0;
+						v[i++]=width;
+						v[i++]=height;
 					}
 					free(r);
 

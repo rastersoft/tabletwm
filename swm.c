@@ -433,17 +433,32 @@ int main(int ac,char *av[]) {
 					/* only modify the request if it is not transient */
 					xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_wm_transient_for,XCB_ATOM_WINDOW,0,1),0);
 					if (r->length) {
+						int nx,ny,nw,nh;
+						nx=ee->x;
+						ny=ee->y;
+						if(ee->width>width) {
+							nx=0;
+							nw=width;
+						} else {
+							nw=ee->width;
+						}
+						if(ee->height>height) {
+							ny=0;
+							nh=height;
+						} else {
+							nh=ee->height;
+						}
 						if (ee->value_mask&XCB_CONFIG_WINDOW_X) {
-							v[i++]=ee->x;
+							v[i++]=nx;
 						}
 						if (ee->value_mask&XCB_CONFIG_WINDOW_Y) {
-							v[i++]=ee->y;
+							v[i++]=ny;
 						}
 						if (ee->value_mask&XCB_CONFIG_WINDOW_WIDTH) {
-							v[i++]=ee->width;
+							v[i++]=nw;
 						}
 						if (ee->value_mask&XCB_CONFIG_WINDOW_HEIGHT) {
-							v[i++]=ee->height;
+							v[i++]=nh;
 						}
 					} else {
 						if (ee->value_mask&XCB_CONFIG_WINDOW_X) {

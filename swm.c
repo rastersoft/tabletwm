@@ -1,3 +1,22 @@
+/* Simple Window Manager
+ * An XCB-based minimalist window manager, oriented to tablet devices
+ * Based on code (C)2011 CINOLT
+ *
+ * (C)2013 Raster Software Vigo (Sergio Costas)
+ *
+ * This code is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 #include<stdlib.h>
 #include<stdio.h>
 #include<stdint.h>
@@ -156,6 +175,31 @@ int main(int ac,char *av[]) {
 	argc=ac;
 	argv=av;
 	chdir(getenv("HOME"));
+
+#if 0
+	{
+		/* parse .swmrc: modify key[256] */
+		rcf=open(".swmrc",O_RDONLY);
+		fstat(rcf,&rcs);
+		rcb=mmap(0,rcs.st_size,PROT_READ,MAP_PRIVATE,rcf,0);
+		char *rcbp=rcb;
+		grab=(*rcbp++-'0')*10*10;
+		grab+=(*rcbp++-'0')*10;
+		grab+=(*rcbp-'0');
+		rcbp+=2;
+		while(*rcbp){
+			xcb_keycode_t i=(*rcbp++-'0')*10*10;
+			i+=(*rcbp++-'0')*10;
+			i+=(*rcbp-'0');
+			rcbp+=2;
+			key[i].a=*rcbp=='0'?0:1;
+			rcbp+=2;
+			key[i].e=rcbp;
+			while(*rcbp)rcbp++;
+			rcbp+=2;
+		}
+	}
+#endif
 
 	conn=xcb_connect(0,0);
 	assert(conn);

@@ -1,12 +1,15 @@
 CC=gcc -c
-LN=gcc
-CFLAGS=-O2
+LN=gcc -O2
+CFLAGS= -O2
 
-swm: swm.o
-	$(LN) -o swm swm.o `pkg-config --libs xcb xcb-util xcb-randr`
+tabletwm: tabletwm.o globals.o
+	$(LN) -o tabletwm tabletwm.o globals.o `pkg-config --libs xcb xcb-util xcb-randr`
 
-swm.o: swm.c
-	$(CC) $(CFLAGS) -o swm.o swm.c `pkg-config --cflags xcb xcb-util xcb-randr`
-	
+tabletwm.o: tabletwm.c globals.h
+	$(CC) $(CFLAGS) -o tabletwm.o tabletwm.c `pkg-config --cflags xcb xcb-util xcb-randr`
+
+globals.o: globals.c globals.h
+	$(CC) $(CFLAGS) -o globals.o globals.c `pkg-config --cflags xcb xcb-util`
+
 clean:
-	rm -f *.o swm
+	rm -f *.o tabletwm

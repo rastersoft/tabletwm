@@ -1,4 +1,4 @@
-/* Simple Window Manager
+/* Tablet Window Manager
  * An XCB-based minimalist window manager, oriented to tablet devices
  * Based on code (C)2011 CINOLT
  *
@@ -31,24 +31,11 @@
 #include<xcb/xcb_atom.h>
 #include<xcb/randr.h>
 
-int argc;
-char **argv;
+#include "globals.h"
+
 int rcf;
 struct stat rcs;
 char *rcb;
-xcb_connection_t *conn;
-xcb_screen_t *scr;
-uint16_t width;
-uint16_t height;
-xcb_keycode_t grab;
-int grabi;
-xcb_atom_t atom_wm_size_hints;
-xcb_atom_t atom_wm_normal_hints;
-xcb_atom_t atom_wm_protocols;
-xcb_atom_t atom_wm_delete_window;
-xcb_atom_t atom_wm_transient_for;
-xcb_atom_t atom_net_wm_window_type;
-
 uint8_t xrandr;
 
 struct key {
@@ -59,148 +46,40 @@ struct key {
 
 xcb_keycode_t keya;
 
-static void *in(void *v) {
+void get_atoms(xcb_connection_t *conn) {
 
-	while(1) {
-		/* open/read/close (hopefully) a pipe */
-		int f=open(".swmin",O_RDONLY);
-		int32_t b;
-		read(f,&b,sizeof(b));
-		close(f);
-		/* switch case doesn't work with dereferenced string literals!? */
-		/* TODO: is behavior same regardless of endianness? */
-		if (b==*(int32_t *)"quit") {
-			xcb_disconnect(conn);
-			exit(0);
-		} else if (b==*(int32_t *)"dele") {
-			/* delete window */
-			xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-			xcb_window_t *wp=xcb_query_tree_children(r);
-			uint16_t i=r->children_len;
-			while(i) {
-				/* find top-most mapped top-level window, and WM_DELETE_WINDOW it */
-				i--;
-				xcb_window_t w=wp[i];
-				xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-				if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-					xcb_client_message_event_t e;
-					e.response_type=XCB_CLIENT_MESSAGE;
-					e.format=32;
-					e.sequence=0;
-					e.window=w;
-					e.type=atom_wm_protocols;
-					e.data.data32[0]=atom_wm_delete_window;
-					e.data.data32[1]=XCB_TIME_CURRENT_TIME;
-					e.data.data32[2]=0;
-					e.data.data32[3]=0;
-					e.data.data32[4]=0;
-					xcb_send_event(conn,0,w,XCB_EVENT_MASK_NO_EVENT,(const char *)&e);
-					xcb_flush(conn);
-					free(r);
-					break;
-				}
-				free(r);
-			}
-			free(r);
-		} else if (b==*(int32_t *)"alte") {
-			/* alternate between first and second top-most mapped top-level windows */
-			xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-			xcb_window_t *wp=xcb_query_tree_children(r);
-			uint16_t i=r->children_len;
-			int j=0;
-			
-			while(i) {
-				i--;
-				xcb_window_t w=wp[i];
-				xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-				if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-					if (!j) {
-						j=1;
-					} else {
-						uint32_t v[]={XCB_STACK_MODE_ABOVE};
-						xcb_configure_window(conn,w,XCB_CONFIG_WINDOW_STACK_MODE,v);
-						xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,w,XCB_TIME_CURRENT_TIME);
-						xcb_flush(conn);
-						free(r);
-						break;
-					}
-				}
-				free(r);
-			}
-			free(r);
-		} else if (b==*(int32_t *)"circ") {
-			/* circulate all mapped top-level windows */
-			xcb_circulate_window(conn,XCB_CIRCULATE_LOWER_HIGHEST,scr->root);
-			xcb_flush(conn);
-			xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-			xcb_window_t *wp=xcb_query_tree_children(r);
-			uint16_t i=r->children_len;
-			
-			while(i) {
-				i--;
-				xcb_window_t w=wp[i];
-				xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-				if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-					xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,w,XCB_TIME_CURRENT_TIME);
-					xcb_flush(conn);
-					free(r);
-					break;
-				}
-				free(r);
-			}
-			free(r);
-		} else if (b==*(int32_t *)"kill") {
-			/* forcefully kill top-most mapped top-level window */
-			xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-			xcb_window_t *wp=xcb_query_tree_children(r);
-			uint16_t i=r->children_len;
-			
-			while(i) {
-				i--;
-				xcb_window_t w=wp[i];
-				xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-				if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-					xcb_kill_client(conn,w);
-					xcb_flush(conn);
-					free(r);
-					break;
-				}
-				free(r);
-			}
-			free(r);
-		}
-	}
+	/* get atoms */
+	xcb_intern_atom_cookie_t c[]={
+		xcb_intern_atom_unchecked(conn,0,13,"WM_SIZE_HINTS"),
+		xcb_intern_atom_unchecked(conn,0,15,"WM_NORMAL_HINTS"),
+		xcb_intern_atom_unchecked(conn,0,12,"WM_PROTOCOLS"),
+		xcb_intern_atom_unchecked(conn,0,16,"WM_DELETE_WINDOW"),
+		xcb_intern_atom_unchecked(conn,0,16,"WM_TRANSIENT_FOR"),
+		xcb_intern_atom_unchecked(conn,0,19,"_NET_WM_WINDOW_TYPE"),
+	};
+
+	xcb_intern_atom_reply_t *r[]={
+		xcb_intern_atom_reply(conn,c[0],0),
+		xcb_intern_atom_reply(conn,c[1],0),
+		xcb_intern_atom_reply(conn,c[2],0),
+		xcb_intern_atom_reply(conn,c[3],0),
+		xcb_intern_atom_reply(conn,c[4],0),
+		xcb_intern_atom_reply(conn,c[5],0),
+	};
+
+	atom_wm_size_hints=r[0]->atom;free(r[0]);
+	atom_wm_normal_hints=r[1]->atom;free(r[1]);
+	atom_wm_protocols=r[2]->atom;free(r[2]);
+	atom_wm_delete_window=r[3]->atom;free(r[3]);
+	atom_wm_transient_for=r[4]->atom;free(r[4]);
+	atom_net_wm_window_type=r[5]->atom;free(r[5]);
+
 }
 
-int main(int ac,char *av[]) {
-	argc=ac;
-	argv=av;
-	chdir(getenv("HOME"));
+int main() {
 
-#if 0
-	{
-		/* parse .swmrc: modify key[256] */
-		rcf=open(".swmrc",O_RDONLY);
-		fstat(rcf,&rcs);
-		rcb=mmap(0,rcs.st_size,PROT_READ,MAP_PRIVATE,rcf,0);
-		char *rcbp=rcb;
-		grab=(*rcbp++-'0')*10*10;
-		grab+=(*rcbp++-'0')*10;
-		grab+=(*rcbp-'0');
-		rcbp+=2;
-		while(*rcbp){
-			xcb_keycode_t i=(*rcbp++-'0')*10*10;
-			i+=(*rcbp++-'0')*10;
-			i+=(*rcbp-'0');
-			rcbp+=2;
-			key[i].a=*rcbp=='0'?0:1;
-			rcbp+=2;
-			key[i].e=rcbp;
-			while(*rcbp)rcbp++;
-			rcbp+=2;
-		}
-	}
-#endif
+	xcb_connection_t *conn;
+	xcb_screen_t *scr;
 
 	conn=xcb_connect(0,0);
 	assert(conn);
@@ -208,37 +87,10 @@ int main(int ac,char *av[]) {
 	width=scr->width_in_pixels;
 	height=scr->height_in_pixels;
 
-	{
-		/* grab events from root window; passive grab on grabkey */
-		uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
-		xcb_change_window_attributes(conn,scr->root,XCB_CW_EVENT_MASK,v);
-		//xcb_grab_key(conn,0,scr->root,0,grab,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
-	}
-	{
-		/* get atoms */
-		xcb_intern_atom_cookie_t c[]={
-			xcb_intern_atom_unchecked(conn,0,13,"WM_SIZE_HINTS"),
-			xcb_intern_atom_unchecked(conn,0,15,"WM_NORMAL_HINTS"),
-			xcb_intern_atom_unchecked(conn,0,12,"WM_PROTOCOLS"),
-			xcb_intern_atom_unchecked(conn,0,16,"WM_DELETE_WINDOW"),
-			xcb_intern_atom_unchecked(conn,0,16,"WM_TRANSIENT_FOR"),
-			xcb_intern_atom_unchecked(conn,0,19,"_NET_WM_WINDOW_TYPE"),
-		};
-		xcb_intern_atom_reply_t *r[]={
-			xcb_intern_atom_reply(conn,c[0],0),
-			xcb_intern_atom_reply(conn,c[1],0),
-			xcb_intern_atom_reply(conn,c[2],0),
-			xcb_intern_atom_reply(conn,c[3],0),
-			xcb_intern_atom_reply(conn,c[4],0),
-			xcb_intern_atom_reply(conn,c[5],0),
-		};
-		atom_wm_size_hints=r[0]->atom;free(r[0]);
-		atom_wm_normal_hints=r[1]->atom;free(r[1]);
-		atom_wm_protocols=r[2]->atom;free(r[2]);
-		atom_wm_delete_window=r[3]->atom;free(r[3]);
-		atom_wm_transient_for=r[4]->atom;free(r[4]);
-		atom_net_wm_window_type=r[5]->atom;free(r[5]);
-	}
+	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
+	xcb_change_window_attributes(conn,scr->root,XCB_CW_EVENT_MASK,v);
+
+	get_atoms(conn);
 	
 	/* detect changes in screen size with xrandr */
 	xcb_randr_query_version_reply_t *r=xcb_randr_query_version_reply(conn,xcb_randr_query_version(conn,1,1),0);
@@ -252,9 +104,6 @@ int main(int ac,char *av[]) {
 	}
 
 	xcb_flush(conn);
-	/* create pipe reading thread */
-	//pthread_t t;
-	//pthread_create(&t,0,in,0);
 	xcb_generic_event_t *e;
 	
 	while((e=xcb_wait_for_event(conn))) {
@@ -295,62 +144,7 @@ int main(int ac,char *av[]) {
 			}
 		} else {
 			switch(r) {
-				case (XCB_KEY_PRESS): {
-					xcb_key_press_event_t *ee=(xcb_key_press_event_t *)e;
-					if (!grabi++) {
-						/* the grabkey was pressed. now actively grab keyboard */
-						xcb_grab_keyboard_unchecked(conn,0,scr->root,XCB_TIME_CURRENT_TIME,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
-						xcb_flush(conn);
-					} else {
-						/*
-						 * a key is pressed in active grab mode
-						 */
-						xcb_keycode_t d=ee->detail;
-						uint16_t s=ee->state;
-						if (s&XCB_MOD_MASK_1) {
-							xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-							xcb_window_t *wp=xcb_query_tree_children(r);
-							uint16_t i=r->children_len;
-							while(i) {
-								i--;
-								xcb_window_t w=wp[i];
-								xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-								if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-									key[d].w=w;
-									free(r);
-									break;
-								}
-								free(r);
-							}
-							free(r);
-						} else if (key[d].w&&!(s&XCB_MOD_MASK_CONTROL)) {
-							uint32_t v[]={XCB_STACK_MODE_ABOVE};
-							xcb_configure_window(conn,key[d].w,XCB_CONFIG_WINDOW_STACK_MODE,v);
-							xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,key[d].w,XCB_TIME_CURRENT_TIME);
-							xcb_flush(conn);
-						} else if (!(s&XCB_MOD_MASK_SHIFT)) {
-							if (key[d].e) {
-								if (!fork()) {
-									char *av[]={"sh","-c",key[d].e,0};
-									execv("/bin/sh",av);
-									exit(EXIT_FAILURE);
-								}
-								if (!key[d].a&&!(s&XCB_MOD_MASK_CONTROL)) {
-									keya=d;
-								}
-							}
-						}
-					}
-				}
-				break;
-				
-				case (XCB_KEY_RELEASE):
-					if (!--grabi) {
-						xcb_ungrab_keyboard(conn,XCB_TIME_CURRENT_TIME);
-						xcb_flush(conn);
-					}
-				break;
-				
+
 				case (XCB_CREATE_NOTIFY):
 					/*xcb_create_notify_event_t *ee=(xcb_create_notify_event_t *)e;*/
 				break;

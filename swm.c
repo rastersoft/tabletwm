@@ -47,6 +47,7 @@ xcb_atom_t atom_wm_normal_hints;
 xcb_atom_t atom_wm_protocols;
 xcb_atom_t atom_wm_delete_window;
 xcb_atom_t atom_wm_transient_for;
+xcb_atom_t atom_net_wm_window_type;
 
 uint8_t xrandr;
 
@@ -221,6 +222,7 @@ int main(int ac,char *av[]) {
 			xcb_intern_atom_unchecked(conn,0,12,"WM_PROTOCOLS"),
 			xcb_intern_atom_unchecked(conn,0,16,"WM_DELETE_WINDOW"),
 			xcb_intern_atom_unchecked(conn,0,16,"WM_TRANSIENT_FOR"),
+			xcb_intern_atom_unchecked(conn,0,19,"_NET_WM_WINDOW_TYPE"),
 		};
 		xcb_intern_atom_reply_t *r[]={
 			xcb_intern_atom_reply(conn,c[0],0),
@@ -228,12 +230,14 @@ int main(int ac,char *av[]) {
 			xcb_intern_atom_reply(conn,c[2],0),
 			xcb_intern_atom_reply(conn,c[3],0),
 			xcb_intern_atom_reply(conn,c[4],0),
+			xcb_intern_atom_reply(conn,c[5],0),
 		};
 		atom_wm_size_hints=r[0]->atom;free(r[0]);
 		atom_wm_normal_hints=r[1]->atom;free(r[1]);
 		atom_wm_protocols=r[2]->atom;free(r[2]);
 		atom_wm_delete_window=r[3]->atom;free(r[3]);
 		atom_wm_transient_for=r[4]->atom;free(r[4]);
+		atom_net_wm_window_type=r[5]->atom;free(r[5]);
 	}
 	
 	/* detect changes in screen size with xrandr */
@@ -389,7 +393,17 @@ int main(int ac,char *av[]) {
 				break;
 
 				case(XCB_MAP_REQUEST): {
+				
 					xcb_map_request_event_t *ee=(xcb_map_request_event_t *)e;
+					
+									xcb_get_property_reply_t *r2=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_net_wm_window_type,XCB_ATOM_ATOM,0,1),0);
+					
+					uint32_t tipo;
+					tipo=*((uint32_t *)(xcb_get_property_value(r2)));
+					
+					printf("Window type: l: %d f: %d t: %d  valor: %s\n",r2->length,r2->format,r2->type,xcb_get_atom_name_name(xcb_get_atom_name_reply(conn,xcb_get_atom_name_unchecked(conn,tipo),NULL)));
+					free(r2);
+					
 					{
 						/* maximize the window if it is not transient */
 						xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_wm_transient_for,XCB_ATOM_WINDOW,0,1),0);
@@ -427,15 +441,18 @@ int main(int ac,char *av[]) {
 
 				case(XCB_CONFIGURE_REQUEST):{
 					xcb_configure_request_event_t *ee=(xcb_configure_request_event_t *)e;
+					
 					uint32_t v[7];
 					int i=0;
 					/* only modify the request if it is not transient */
 					xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_wm_transient_for,XCB_ATOM_WINDOW,0,1),0);
 					ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT;
+					printf("%dx%d  %dx%d\n",ee->x,ee->y,ee->width,ee->height);
 					if (r->length) {
 						int nx,ny,nw,nh;
-						nx=ee->x;
-						ny=ee->y;
+						nx=ee->x>=0 ? ee->x : (width-ee->width)/2;
+						ny=ee->y>=0 ? ee->y : (height-ee->height)/2;
+						
 						if(ee->width>width) {
 							nx=0;
 							nw=width;
@@ -448,6 +465,7 @@ int main(int ac,char *av[]) {
 						} else {
 							nh=ee->height;
 						}
+						printf("2: %dx%d  %dx%d\n",nx,ny,nw,nh);
 						v[i++]=nx;
 						v[i++]=ny;
 						v[i++]=nw;

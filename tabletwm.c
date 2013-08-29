@@ -33,25 +33,9 @@
 #include "globals.h"
 #include "init.h"
 
-int rcf;
-struct stat rcs;
-char *rcb;
-uint8_t xrandr;
-
-struct key {
-	int a;
-	char *e;
-	xcb_window_t w;
-} key[256];
-
-xcb_keycode_t keya;
-
-void get_atoms(xcb_connection_t *conn) {
-
-
-}
-
 int main() {
+
+	uint8_t xrandr;
 
 	init_tabletwm();
 
@@ -135,16 +119,6 @@ int main() {
 							}
 						}
 						free(r);
-
-						/* unassign any window assignment */
-						int j=256;
-						while(j) {
-							j--;
-							if (key[j].w==ee->window) {
-								key[j].w=0;
-								break;
-							}
-						}
 					}
 				}
 				break;
@@ -191,8 +165,6 @@ int main() {
 						}
 						free(r);
 					}
-					key[keya].w=ee->window;
-					keya=0;
 				}
 				break;
 
@@ -201,24 +173,37 @@ int main() {
 					
 					uint32_t v[7];
 					int i=0;
+					int nx,ny,nw,nh;
+
 					/* only modify the request if it is not transient */
 					xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1),0);
-					ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT;
 					printf("%dx%d  %dx%d\n",ee->x,ee->y,ee->width,ee->height);
+#if 1
 					if (r->length) {
-						int nx,ny,nw,nh;
-						nx=ee->x>=0 ? ee->x : (width-ee->width)/2;
-						ny=ee->y>=0 ? ee->y : (height-ee->height)/2;
+						if (ee->x>=0) {
+							nx=ee->x;
+						} else {
+							nx=(width-ee->width)/2;
+							ee->value_mask|=XCB_CONFIG_WINDOW_X;
+						}
+						if (ee->y>=0) {
+							ny=ee->y;
+						} else {
+							ny=(height-ee->height)/2;
+							ee->value_mask|=XCB_CONFIG_WINDOW_Y;
+						}
 						
 						if(ee->width>width) {
 							nx=0;
 							nw=width;
+							ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_WIDTH;
 						} else {
 							nw=ee->width;
 						}
 						if(ee->height>height) {
 							ny=0;
 							nh=height;
+							ee->value_mask|=XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_HEIGHT;
 						} else {
 							nh=ee->height;
 						}
@@ -228,12 +213,29 @@ int main() {
 						v[i++]=nw;
 						v[i++]=nh;
 					} else {
-						v[i++]=0;
-						v[i++]=0;
-						v[i++]=width;
-						v[i++]=height;
+#else
+					{
+#endif
+						ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT;
+						nx=0;
+						ny=0;
+						nw=width;
+						nh=height;
 					}
 					free(r);
+
+					if (ee->value_mask&XCB_CONFIG_WINDOW_X) {
+						v[i++]=nx;
+					}
+					if (ee->value_mask&XCB_CONFIG_WINDOW_Y) {
+						v[i++]=ny;
+					}
+					if (ee->value_mask&XCB_CONFIG_WINDOW_WIDTH) {
+						v[i++]=nw;
+					}
+					if (ee->value_mask&XCB_CONFIG_WINDOW_HEIGHT) {
+						v[i++]=nh;
+					}
 
 					if (ee->value_mask&XCB_CONFIG_WINDOW_BORDER_WIDTH) {
 						v[i++]=ee->border_width;

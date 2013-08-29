@@ -17,21 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<stdint.h>
-#include<assert.h>
-#include<unistd.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<sys/mman.h>
-#include<fcntl.h>
-#include<pthread.h>
-#include<xcb/xcb.h>
-#include<xcb/xcb_atom.h>
-#include<xcb/randr.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_atom.h>
+#include <xcb/randr.h>
 
 #include "globals.h"
+#include "init.h"
 
 int rcf;
 struct stat rcs;
@@ -48,50 +48,13 @@ xcb_keycode_t keya;
 
 void get_atoms(xcb_connection_t *conn) {
 
-	/* get atoms */
-	xcb_intern_atom_cookie_t c[]={
-		xcb_intern_atom_unchecked(conn,0,13,"WM_SIZE_HINTS"),
-		xcb_intern_atom_unchecked(conn,0,15,"WM_NORMAL_HINTS"),
-		xcb_intern_atom_unchecked(conn,0,12,"WM_PROTOCOLS"),
-		xcb_intern_atom_unchecked(conn,0,16,"WM_DELETE_WINDOW"),
-		xcb_intern_atom_unchecked(conn,0,16,"WM_TRANSIENT_FOR"),
-		xcb_intern_atom_unchecked(conn,0,19,"_NET_WM_WINDOW_TYPE"),
-	};
-
-	xcb_intern_atom_reply_t *r[]={
-		xcb_intern_atom_reply(conn,c[0],0),
-		xcb_intern_atom_reply(conn,c[1],0),
-		xcb_intern_atom_reply(conn,c[2],0),
-		xcb_intern_atom_reply(conn,c[3],0),
-		xcb_intern_atom_reply(conn,c[4],0),
-		xcb_intern_atom_reply(conn,c[5],0),
-	};
-
-	atom_wm_size_hints=r[0]->atom;free(r[0]);
-	atom_wm_normal_hints=r[1]->atom;free(r[1]);
-	atom_wm_protocols=r[2]->atom;free(r[2]);
-	atom_wm_delete_window=r[3]->atom;free(r[3]);
-	atom_wm_transient_for=r[4]->atom;free(r[4]);
-	atom_net_wm_window_type=r[5]->atom;free(r[5]);
 
 }
 
 int main() {
 
-	xcb_connection_t *conn;
-	xcb_screen_t *scr;
+	init_tabletwm();
 
-	conn=xcb_connect(0,0);
-	assert(conn);
-	scr=xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
-	width=scr->width_in_pixels;
-	height=scr->height_in_pixels;
-
-	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
-	xcb_change_window_attributes(conn,scr->root,XCB_CW_EVENT_MASK,v);
-
-	get_atoms(conn);
-	
 	/* detect changes in screen size with xrandr */
 	xcb_randr_query_version_reply_t *r=xcb_randr_query_version_reply(conn,xcb_randr_query_version(conn,1,1),0);
 	if (r) {
@@ -128,7 +91,7 @@ int main() {
 						xcb_window_t w=wp[i];
 						xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
 						if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-							xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,w,atom_wm_transient_for,XCB_ATOM_WINDOW,0,1),0);
+							xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,w,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1),0);
 							if (!r->length) {
 								uint32_t v[4]={0,0,width,height};
 								xcb_configure_window(conn,w,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,v);
@@ -190,7 +153,7 @@ int main() {
 				
 					xcb_map_request_event_t *ee=(xcb_map_request_event_t *)e;
 					
-									xcb_get_property_reply_t *r2=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_net_wm_window_type,XCB_ATOM_ATOM,0,1),0);
+									xcb_get_property_reply_t *r2=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1),0);
 					
 					uint32_t tipo;
 					tipo=*((uint32_t *)(xcb_get_property_value(r2)));
@@ -200,7 +163,7 @@ int main() {
 					
 					{
 						/* maximize the window if it is not transient */
-						xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_wm_transient_for,XCB_ATOM_WINDOW,0,1),0);
+						xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1),0);
 						if (!r->length) {
 							uint32_t v[4]={0,0,width,height};
 							xcb_configure_window(conn,ee->window,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,v);
@@ -239,7 +202,7 @@ int main() {
 					uint32_t v[7];
 					int i=0;
 					/* only modify the request if it is not transient */
-					xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atom_wm_transient_for,XCB_ATOM_WINDOW,0,1),0);
+					xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1),0);
 					ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT;
 					printf("%dx%d  %dx%d\n",ee->x,ee->y,ee->width,ee->height);
 					if (r->length) {

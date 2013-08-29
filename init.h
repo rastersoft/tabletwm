@@ -17,12 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "globals.h"
+#ifndef _H_INIT_
+#define _H_INIT_
 
-xcb_atom_t atoms[TWM_ATOM_LAST_VALUE];
+#include <xcb/xcb.h>
+#include <xcb/xcb_atom.h>
 
-uint16_t width;
-uint16_t height;
+void init_tabletwm();
 
-xcb_connection_t *conn;
-xcb_screen_t *scr;
+#endif //_H_INIT_

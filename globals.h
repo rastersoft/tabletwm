@@ -1,4 +1,4 @@
-/* Simple Window Manager
+/* Tablet Window Manager
  * An XCB-based minimalist window manager, oriented to tablet devices
  * Based on code (C)2011 CINOLT
  *
@@ -20,17 +20,18 @@
 #ifndef _H_GLOBALS_
 #define _H_GLOBALS_
 
-#include<xcb/xcb.h>
-#include<xcb/xcb_atom.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_atom.h>
 
-extern xcb_atom_t atom_wm_size_hints;
-extern xcb_atom_t atom_wm_normal_hints;
-extern xcb_atom_t atom_wm_protocols;
-extern xcb_atom_t atom_wm_delete_window;
-extern xcb_atom_t atom_wm_transient_for;
-extern xcb_atom_t atom_net_wm_window_type;
+enum ATOM_DEFS {TWM_ATOM_WM_SIZE_HINTS, TWM_ATOM_WM_NORMAL_HINTS, TWM_ATOM_WM_PROTOCOLS,
+TWM_ATOM_WM_DELETE_WINDOW, TWM_ATOM_WM_TRANSIENT_FOR, TWM_ATOM__NET_WM_WINDOW_TYPE, TWM_ATOM_LAST_VALUE};
+
+extern xcb_atom_t atoms[];
 
 extern uint16_t width;
 extern uint16_t height;
+
+extern xcb_connection_t *conn;
+extern xcb_screen_t *scr;
 
 #endif // _H_GLOBALS_

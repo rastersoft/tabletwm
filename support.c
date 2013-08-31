@@ -80,10 +80,10 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	}
 
 	if ((window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP])||
-		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_UTILITY])||
-		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NORMAL])) {
+		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_UTILITY])) {
 			what_to_do=0;
-	} else if(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG]) {
+	} else if ((window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG])||
+		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NORMAL])) {
 			what_to_do=1;
 	} else if(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_SPLASH]) {
 			what_to_do=2;
@@ -109,6 +109,23 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	switch(what_to_do) {
 	case 1:
 		if (is_resizable==0) {
+			int nx,ny;
+			if (size->new_w) {
+				nx=(width-size->w)/2;
+				if ((size->new_x==0)||(size->x!=nx)) {
+					size->new_x=1;
+					size->x=nx;
+					size->force_change=1;
+				}
+			}
+			if (size->new_h) {
+				ny=(height-size->h)/2;
+				if ((size->new_y==0)||(size->y!=ny)) {
+					size->new_y=1;
+					size->y=ny;
+					size->force_change=1;
+				}
+			}
 			break;
 		}
 	case 0:
@@ -143,6 +160,8 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		}
 	break;
 	case 3:
+	break;
+	default:
 	break;
 	}
 }

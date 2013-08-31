@@ -22,6 +22,7 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
+#include <xcb/xcb_icccm.h>
 
 struct support_new_size {
 

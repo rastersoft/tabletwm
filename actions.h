@@ -27,5 +27,6 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e);
 void action_unmap_notify(xcb_generic_event_t *e);
 void action_map_request(xcb_generic_event_t *e);
 void action_configure_request(xcb_generic_event_t *e);
+void action_key(xcb_generic_event_t *e);
 
 #endif //_H_ACTIONS_

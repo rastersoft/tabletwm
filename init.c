@@ -72,6 +72,8 @@ void init_tabletwm() {
 		"_NET_WM_ACTION_CLOSE",
 		"_NET_WM_ACTION_ABOVE",
 		"_NET_WM_ACTION_BELOW",
+		
+		"WM_CLASS",
 	};
 
 	conn=xcb_connect(0,0);

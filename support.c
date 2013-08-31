@@ -18,7 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
  
 #include <stdlib.h>
- 
+#include <stdio.h>
+#include <string.h>
+
 #include "support.h"
 #include "globals.h"
 
@@ -30,11 +32,13 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	xcb_get_property_cookie_t transient_for_cookie;
 	xcb_get_property_cookie_t normal_hints_cookie;
 	xcb_get_property_cookie_t size_hints_cookie;
+	xcb_get_property_cookie_t wmclass_cookie;
 
 	xcb_get_property_reply_t *window_type;
 	xcb_get_property_reply_t *transient_for;
 	xcb_get_property_reply_t *normal_hints;
 	xcb_get_property_reply_t *size_hints;
+	xcb_get_property_reply_t *wmclass;
 	
 	uint32_t window_type_i;
 	uint8_t is_transient;
@@ -43,8 +47,9 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	
 	window_type_cookie     = xcb_get_property(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
 	transient_for_cookie   = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1);
+	wmclass_cookie         = xcb_icccm_get_wm_class_unchecked(conn,window);
 	normal_hints_cookie    = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,0,1);
-	
+
 	xcb_flush(conn);
 	
 	window_type = xcb_get_property_reply(conn,window_type_cookie,0);
@@ -55,6 +60,15 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	transient_for = xcb_get_property_reply(conn,transient_for_cookie,0);
 	is_transient = transient_for->length==0 ? 0 : 1;
 	free(transient_for);
+
+	wmclass = xcb_get_property_reply(conn,wmclass_cookie,0);
+	xcb_icccm_get_wm_class_reply_t wmclass_data;
+	if (wmclass->length!=0) {
+		xcb_icccm_get_wm_class_from_reply(&wmclass_data,wmclass);
+		printf("CLASS: %s : %s\n",wmclass_data.instance_name,wmclass_data.class_name);
+	} else {
+		printf("No existe WMCLASS\n");
+	}
 
 	normal_hints = xcb_get_property_reply(conn,normal_hints_cookie,0);
 
@@ -68,6 +82,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		int32_t minw,minh,maxw,maxh;
 
 		size_hints_cookie = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,5,4);
+		xcb_flush(conn);
 		size_hints = xcb_get_property_reply(conn,size_hints_cookie,0);
 		v2=((uint32_t *)(xcb_get_property_value(size_hints)));
 		minw=v2[0];
@@ -184,3 +199,48 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	break;
 	}
 }
+
+void support_next_app() {
+
+
+}
+
+void support_next_window() {
+
+
+
+}
+
+void support_close_window() {
+
+	/* delete window */
+	xcb_query_tree_reply_t *reply=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+	xcb_window_t *wp=xcb_query_tree_children(reply);
+	uint16_t i=reply->children_len;
+	while(i) {
+		/* find top-most mapped top-level window, and WM_DELETE_WINDOW it */
+		i--;
+		xcb_window_t w=wp[i];
+		xcb_get_window_attributes_reply_t *r_wattr=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
+		if(r_wattr->map_state==XCB_MAP_STATE_VIEWABLE){
+			xcb_client_message_event_t e;
+			e.response_type=XCB_CLIENT_MESSAGE;
+			e.format=32;
+			e.sequence=0;
+			e.window=w;
+			e.type=atoms[TWM_ATOM_WM_PROTOCOLS];
+			e.data.data32[0]=atoms[TWM_ATOM_WM_DELETE_WINDOW];
+			e.data.data32[1]=XCB_TIME_CURRENT_TIME;
+			e.data.data32[2]=0;
+			e.data.data32[3]=0;
+			e.data.data32[4]=0;
+			xcb_send_event(conn,0,w,XCB_EVENT_MASK_NO_EVENT,(const char *)&e);
+			xcb_flush(conn);
+			free(r_wattr);
+			break;
+		}
+		free(r_wattr);
+	}
+	free(reply);
+}
+

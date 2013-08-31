@@ -218,4 +218,12 @@ void action_configure_request(xcb_generic_event_t *e) {
 	}
 }
 
+void action_key(xcb_generic_event_t *e) {
 
+	xcb_key_press_event_t *ee=(xcb_key_press_event_t *)e;
+	
+	// Alt+F4
+	if ((ee->detail==70)&&(ee->state&XCB_MOD_MASK_1)) {
+		support_close_window();
+	}
+}

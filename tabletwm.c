@@ -40,6 +40,13 @@ int main() {
 
 	init_tabletwm();
 
+	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
+	xcb_change_window_attributes(conn,scr->root,XCB_CW_EVENT_MASK,v);
+	// grab ALT (to allow to use Alt+TAB and Ctrl+TAB)
+	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_ANY,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
+	// grab F4 (to allow to use Alt+F4)
+	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_ANY,70,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
+
 	/* detect changes in screen size with xrandr */
 	xcb_randr_query_version_reply_t *r=xcb_randr_query_version_reply(conn,xcb_randr_query_version(conn,1,1),0);
 	if (r) {
@@ -65,7 +72,9 @@ int main() {
 			}
 		} else {
 			switch(r) {
-
+				case(XCB_KEY_PRESS):
+					action_key(e);
+				break;
 				case (XCB_CREATE_NOTIFY):
 					/*xcb_create_notify_event_t *ee=(xcb_create_notify_event_t *)e;*/
 				break;

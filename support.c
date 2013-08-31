@@ -38,7 +38,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	
 	uint32_t window_type_i;
 	uint8_t is_transient;
-	uint8_t what_to_do; // 0: maximize always; 1: maximize if resizable, leave as-is if not; 2: reduce to screen size if bigger, and center; 3: leave as-is
+	uint8_t what_to_do; // 0: maximize always; 1: maximize if resizable, center if not; 2: reduce to screen size if bigger, center if not; 3: leave as-is
 	uint8_t is_resizable;
 	
 	window_type_cookie     = xcb_get_property(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
@@ -82,10 +82,11 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	if ((window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP])||
 		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_UTILITY])) {
 			what_to_do=0;
-	} else if ((window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG])||
+	} else if (
+		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG])||
 		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NORMAL])) {
 			what_to_do=1;
-	} else if(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_SPLASH]) {
+	} else if (window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_SPLASH]) {
 			what_to_do=2;
 	} else if (
 		(window_type_i==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])||
@@ -100,9 +101,9 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 			what_to_do=3;
 	} else {
 		if (is_transient) {
-			what_to_do=1;
+			what_to_do=2;
 		} else {
-			what_to_do=0;
+			what_to_do=1;
 		}
 	}
 

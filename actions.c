@@ -20,9 +20,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <xcb/randr.h>
+#include <string.h>
 
 #include "globals.h"
 #include "actions.h"
+#include "support.h"
 
 void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 
@@ -84,26 +86,38 @@ void action_unmap_notify(xcb_generic_event_t *e) {
 void action_map_request(xcb_generic_event_t *e) {
 
 	xcb_map_request_event_t *ee=(xcb_map_request_event_t *)e;
-					
-	xcb_get_property_reply_t *r2=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1),0);
-	
-	uint32_t tipo;
-	tipo=*((uint32_t *)(xcb_get_property_value(r2)));
-	
-	printf("Window type: l: %d f: %d t: %d  valor: %s\n",r2->length,r2->format,r2->type,xcb_get_atom_name_name(xcb_get_atom_name_reply(conn,xcb_get_atom_name_unchecked(conn,tipo),NULL)));
-	free(r2);
-	
-
-		/* maximize the window if it is not transient */
-	xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1),0);
-	if (!r->length) {
-		uint32_t v[4]={0,0,width,height};
-		xcb_configure_window(conn,ee->window,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,v);
-	}
-	free(r);
 
 	xcb_map_window(conn,ee->window);
 	xcb_flush(conn);
+
+	struct support_new_size sizes;
+	memset(&sizes,0,sizeof(struct support_new_size));
+
+	support_calculate_new_size(ee->window,&sizes);
+
+	/* set window size and position if needed */
+	uint32_t v[4];
+	uint32_t flags=0;
+	int loop=0;
+	if (sizes.new_x) {
+		v[loop++]=sizes.x;
+		flags|=XCB_CONFIG_WINDOW_X;
+	}
+	if (sizes.new_y) {
+		v[loop++]=sizes.y;
+		flags|=XCB_CONFIG_WINDOW_Y;
+	}
+	if (sizes.new_w) {
+		v[loop++]=sizes.w;
+		flags|=XCB_CONFIG_WINDOW_WIDTH;
+	}
+	if (sizes.new_h) {
+		v[loop++]=sizes.h;
+		flags|=XCB_CONFIG_WINDOW_HEIGHT;
+	}
+	if ((flags)&&(sizes.force_change)) {
+		xcb_configure_window(conn,ee->window,flags,v);
+	}
 
 	/* set the new input focus */
 	xcb_query_tree_reply_t *qtr=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
@@ -129,68 +143,49 @@ void action_configure_request(xcb_generic_event_t *e) {
 	xcb_configure_request_event_t *ee=(xcb_configure_request_event_t *)e;
 	
 	uint32_t v[7];
-	int i=0;
+	int i;
 	int nx,ny,nw,nh;
 
-	/* only modify the request if it is not transient */
-	xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,ee->window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1),0);
-	printf("%dx%d  %dx%d\n",ee->x,ee->y,ee->width,ee->height);
+	struct support_new_size sizes;
+	memset(&sizes,0,sizeof(struct support_new_size));
 
-	if (r->length) {
-		if (ee->x>=0) {
-			nx=ee->x;
-		} else {
-			nx=(width-ee->width)/2;
-			ee->value_mask|=XCB_CONFIG_WINDOW_X;
-		}
-		if (ee->y>=0) {
-			ny=ee->y;
-		} else {
-			ny=(height-ee->height)/2;
-			ee->value_mask|=XCB_CONFIG_WINDOW_Y;
-		}
-		
-		if(ee->width>width) {
-			nx=0;
-			nw=width;
-			ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_WIDTH;
-		} else {
-			nw=ee->width;
-		}
-		if(ee->height>height) {
-			ny=0;
-			nh=height;
-			ee->value_mask|=XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_HEIGHT;
-		} else {
-			nh=ee->height;
-		}
-		printf("2: %dx%d  %dx%d\n",nx,ny,nw,nh);
-		v[i++]=nx;
-		v[i++]=ny;
-		v[i++]=nw;
-		v[i++]=nh;
-	} else {
-		ee->value_mask|=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT;
-		nx=0;
-		ny=0;
-		nw=width;
-		nh=height;
-	}
-	free(r);
-
+	i=0;
 	if (ee->value_mask&XCB_CONFIG_WINDOW_X) {
-		v[i++]=nx;
+		sizes.new_x=1;
+		sizes.x=ee->x;
 	}
 	if (ee->value_mask&XCB_CONFIG_WINDOW_Y) {
-		v[i++]=ny;
+		sizes.new_y=1;
+		sizes.y=ee->y;
 	}
 	if (ee->value_mask&XCB_CONFIG_WINDOW_WIDTH) {
-		v[i++]=nw;
+		sizes.new_w=1;
+		sizes.w=ee->width;
 	}
 	if (ee->value_mask&XCB_CONFIG_WINDOW_HEIGHT) {
-		v[i++]=nh;
+		sizes.new_h=1;
+		sizes.h=ee->height;
 	}
+	
+	support_calculate_new_size(ee->window,&sizes);
 
+	i=0;
+	if (sizes.new_x) {
+		ee->value_mask|=XCB_CONFIG_WINDOW_X;
+		v[i++]=sizes.x;
+	}
+	if (sizes.new_y) {
+		ee->value_mask|=XCB_CONFIG_WINDOW_Y;
+		v[i++]=sizes.y;
+	}
+	if (sizes.new_w) {
+		ee->value_mask|=XCB_CONFIG_WINDOW_WIDTH;
+		v[i++]=sizes.w;
+	}
+	if (sizes.new_h) {
+		ee->value_mask|=XCB_CONFIG_WINDOW_HEIGHT;
+		v[i++]=sizes.h;
+	}
 	if (ee->value_mask&XCB_CONFIG_WINDOW_BORDER_WIDTH) {
 		v[i++]=ee->border_width;
 	}

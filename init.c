@@ -27,7 +27,7 @@
 
 void init_tabletwm() {
 
-	xcb_void_cookie_t void_cookie[30];
+	xcb_void_cookie_t void_cookie;
 	xcb_window_t win;
 	xcb_intern_atom_cookie_t atom_cookie[TWM_ATOM_LAST_VALUE];
 	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
@@ -98,73 +98,54 @@ void init_tabletwm() {
 	};
 
 	i=1;
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM_WM_DELETE_WINDOW]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLBAR]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_MENU]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_UTILITY]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_SPLASH]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DROPDOWN_MENU]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_POPUP_MENU]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLTIP]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NOTIFICATION]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_COMBO]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DND]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NORMAL]);
+	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM_WM_DELETE_WINDOW]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLBAR]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_MENU]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_UTILITY]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_SPLASH]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DROPDOWN_MENU]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_POPUP_MENU]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLTIP]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NOTIFICATION]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_COMBO]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DND]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NORMAL]);
 
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ALLOWED_ACTIONS]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MOVE]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_RESIZE]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MINIMIZE]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_SHADE]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_STICK]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MAXIMIZE_HORZ]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MAXIMIZE_VERT]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_FULLSCREEN]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_CHANGE_DESKTOP]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_CLOSE]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_ABOVE]);
-	void_cookie[i++]=xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_BELOW]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ALLOWED_ACTIONS]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MOVE]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_RESIZE]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MINIMIZE]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_SHADE]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_STICK]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MAXIMIZE_HORZ]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_MAXIMIZE_VERT]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_FULLSCREEN]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_CHANGE_DESKTOP]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_CLOSE]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_ABOVE]);
+	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_BELOW]);
 
 
 	win = xcb_generate_id(conn);
 
 	// fake window to ensure that the window manager is recognized as an Extended Window Manager Hints WM
-	void_cookie[0]=xcb_create_window_checked (conn,XCB_COPY_FROM_PARENT,win,scr->root,0,0,1,1,1,XCB_WINDOW_CLASS_INPUT_OUTPUT,scr->root_visual,0,NULL);
+	void_cookie=xcb_create_window_checked (conn,XCB_COPY_FROM_PARENT,win,scr->root,0,0,1,1,1,XCB_WINDOW_CLASS_INPUT_OUTPUT,scr->root_visual,0,NULL);
 
 	xcb_flush(conn);
 
-	// check if the SUPPORTED property has been inserted fine
-	for(i=1;i<17;i++) {
-		if(xcb_request_check(conn,void_cookie[i])) {
-			printf("Error when inserting element %d in _NET_SUPPORTED property\n",i);
-		}
-	}
-
-	if (xcb_request_check(conn,void_cookie[0])) {
+	if (xcb_request_check(conn,void_cookie)) {
 		printf("Can't create the fake window\n");
 	} else {
 		// Set the _NET_SUPPORTING_WM_CHECK property pointing to the window ID in both the root and fake windows
 		// Also set the WM_NAME property in both windows to TWM_NAME
-		void_cookie[0]=xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&win);
-		void_cookie[1]=xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
-		void_cookie[2]=xcb_change_property(conn,XCB_PROP_MODE_REPLACE,win,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&win);
-		void_cookie[3]=xcb_change_property(conn,XCB_PROP_MODE_REPLACE,win,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&win);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,win,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&win);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,win,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
 		xcb_flush(conn);
-		if (xcb_request_check(conn,void_cookie[0])) {
-			printf("Can't set _NET_SUPPORTING_WM_CHECK in root window\n");
-		}
-		if (xcb_request_check(conn,void_cookie[1])) {
-			printf("Can't set _NET_WM_NAME in root window\n");
-		}
-		if (xcb_request_check(conn,void_cookie[2])) {
-			printf("Can't set _NET_SUPPORTING_WM_CHECK in fake window\n");
-		}
-		if (xcb_request_check(conn,void_cookie[3])) {
-			printf("Can't set _NET_WM_NAME in fake window\n");
-		}
 	}
 }

@@ -144,19 +144,37 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		size->force_change=1;
 	break;
 	case 2:
-		if ((size->new_w)&&(size->w>width)) {
-			size->new_x=1;
-			size->new_w=1;
-			size->x=0;
-			size->w=width;
-			size->force_change=1;
+		if (size->new_w) {
+			if (size->w>width) { // if size is bigger than the screen, resize to the screen
+				size->new_x=1;
+				size->x=0;
+				size->w=width;
+				size->force_change=1;
+			} else { // if size is smaller, center in the screen
+				int nx;
+				nx=(width-size->w)/2;
+				if ((size->new_x==0)||(size->x!=nx)) {
+					size->new_x=1;
+					size->x=nx;
+					size->force_change=1;
+				}
+			}
 		}
-		if ((size->new_h)&&(size->h>height)) {
-			size->new_y=1;
-			size->new_h=1;
-			size->y=0;
-			size->h=height;
-			size->force_change=1;
+		if (size->new_h) {
+			if (size->h>height) {
+				size->new_y=1;
+				size->y=0;
+				size->h=height;
+				size->force_change=1;
+			} else {
+				int ny;
+				ny=(height-size->h)/2;
+				if ((size->new_y==0)||(size->y!=ny)) {
+					size->new_y=1;
+					size->y=ny;
+					size->force_change=1;
+				}
+			}
 		}
 	break;
 	case 3:

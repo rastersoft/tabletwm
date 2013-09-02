@@ -39,4 +39,7 @@ struct support_new_size {
 
 void support_calculate_new_size(xcb_window_t window, struct support_new_size *size);
 
+void support_close_window();
+void support_set_focus();
+
 #endif // _H_SUPPORT_

@@ -66,6 +66,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	if (wmclass->length!=0) {
 		xcb_icccm_get_wm_class_from_reply(&wmclass_data,wmclass);
 		printf("CLASS: %s : %s\n",wmclass_data.instance_name,wmclass_data.class_name);
+		xcb_icccm_get_wm_class_reply_wipe(&wmclass_data);
 	} else {
 		printf("No existe WMCLASS\n");
 	}
@@ -242,5 +243,33 @@ void support_close_window() {
 		free(r_wattr);
 	}
 	free(reply);
+	
+	support_set_focus();
 }
 
+void support_set_focus() {
+
+	uint32_t window=XCB_WINDOW_NONE;
+
+	/* set the new input focus */
+	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+	xcb_window_t *wp=xcb_query_tree_children(r);
+	uint16_t i=r->children_len;
+	while(i) {
+		i--;
+		xcb_window_t w=wp[i];
+		xcb_get_window_attributes_reply_t *war=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
+		if (war) {
+			if (war->map_state==XCB_MAP_STATE_VIEWABLE) {
+				xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,w,XCB_TIME_CURRENT_TIME);
+				window=w;
+				free(war);
+				break;
+			}
+			free(war);
+		}
+	}
+	free(r);
+	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_ACTIVE_WINDOW],XCB_ATOM_WINDOW,32,1,&window);
+	xcb_flush(conn);
+}

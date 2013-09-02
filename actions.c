@@ -62,25 +62,11 @@ void action_unmap_notify(xcb_generic_event_t *e) {
 
 	xcb_unmap_notify_event_t *ee=(xcb_unmap_notify_event_t *)e;
 
-	/* set the new input focus */
-	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-	xcb_window_t *wp=xcb_query_tree_children(r);
-	uint16_t i=r->children_len;
-	while(i) {
-		i--;
-		xcb_window_t w=wp[i];
-		xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-		if (r) {
-			if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-				xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,w,XCB_TIME_CURRENT_TIME);
-				xcb_flush(conn);
-				free(r);
-				break;
-			}
-			free(r);
-		}
-	}
-	free(r);
+	uint32_t data[]={0,XCB_WINDOW_NONE}; // Withdrawn status
+	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,ee->window,atoms[TWM_ATOM_WM_STATE],XCB_ATOM_CARDINAL,32,2,data);
+	xcb_flush(conn);
+
+	support_set_focus();
 }
 
 void action_map_request(xcb_generic_event_t *e) {
@@ -88,6 +74,9 @@ void action_map_request(xcb_generic_event_t *e) {
 	xcb_map_request_event_t *ee=(xcb_map_request_event_t *)e;
 
 	xcb_map_window(conn,ee->window);
+
+	uint32_t data[]={1,XCB_WINDOW_NONE}; // Normal status
+	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,ee->window,atoms[TWM_ATOM_WM_STATE],XCB_ATOM_CARDINAL,32,2,data);
 	xcb_flush(conn);
 
 	struct support_new_size sizes;
@@ -119,23 +108,8 @@ void action_map_request(xcb_generic_event_t *e) {
 		xcb_configure_window(conn,ee->window,flags,v);
 	}
 
-	/* set the new input focus */
-	xcb_query_tree_reply_t *qtr=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-	xcb_window_t *wp=xcb_query_tree_children(qtr);
-	uint16_t i=qtr->children_len;
-	while(i) {
-		i--;
-		xcb_window_t w=wp[i];
-		xcb_get_window_attributes_reply_t *war=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-		if (war->map_state==XCB_MAP_STATE_VIEWABLE) {
-			xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,w,XCB_TIME_CURRENT_TIME);
-			xcb_flush(conn);
-			free(war);
-			break;
-		}
-		free(war);
-	}
-	free(qtr);
+	support_set_focus();
+
 }
 
 void action_configure_request(xcb_generic_event_t *e) {
@@ -198,23 +172,7 @@ void action_configure_request(xcb_generic_event_t *e) {
 	xcb_configure_window(conn,ee->window,ee->value_mask,v);
 	xcb_flush(conn);
 	if (ee->value_mask&XCB_CONFIG_WINDOW_STACK_MODE) {
-		/* it modifies the window stack; set the new input focus */
-		xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-		xcb_window_t *wp=xcb_query_tree_children(r);
-		uint16_t i=r->children_len;
-		while(i) {
-			i--;
-			xcb_window_t w=wp[i];
-			xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-			if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-				xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,w,XCB_TIME_CURRENT_TIME);
-				xcb_flush(conn);
-				free(r);
-				break;
-			}
-			free(r);
-		}
-		free(r);
+		support_set_focus();
 	}
 }
 
@@ -226,4 +184,7 @@ void action_key(xcb_generic_event_t *e) {
 	if ((ee->detail==70)&&(ee->state&XCB_MOD_MASK_1)) {
 		support_close_window();
 	}
+	
+	printf("Captura de tecla: %d %X\n",ee->detail,ee->state);
+	
 }

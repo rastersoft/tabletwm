@@ -74,6 +74,8 @@ void init_tabletwm() {
 		"_NET_WM_ACTION_BELOW",
 		
 		"WM_CLASS",
+		"WM_STATE",
+		"_NET_ACTIVE_WINDOW",
 	};
 
 	conn=xcb_connect(0,0);

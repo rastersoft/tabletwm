@@ -58,13 +58,13 @@ int main() {
 	/* detect changes in screen size with xrandr */
 	xcb_randr_query_version_reply_t *r=xcb_randr_query_version_reply(conn,xcb_randr_query_version(conn,1,1),0);
 	if (r) {
-		free(r);
 		xcb_randr_select_input(conn,scr->root,XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE);
 
 		const xcb_query_extension_reply_t *r2=xcb_get_extension_data(conn,&xcb_randr_id);
 		xrandr=r2->first_event;
 		free((void *)r2);
 	}
+	free(r);
 
 	xcb_flush(conn);
 	xcb_generic_event_t *e;

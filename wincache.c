@@ -185,7 +185,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 
 	element->resizable=1; // by default, all windows are resizable
 
-	if (normal_hints) {
+	if ((normal_hints)&&(normal_hints->length>0)) {
 		uint32_t v;
 		v=*((uint32_t *)(xcb_get_property_value(normal_hints)));
 		if ((v&0x30)!=0) { // MIN and MAX size values are set
@@ -194,7 +194,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 			int32_t minw,minh,maxw,maxh;
 
 			
-			if (size_hints) {
+			if ((size_hints)&&(size_hints->length==4)) {
 				v2=((uint32_t *)(xcb_get_property_value(size_hints)));
 				minw=v2[0];
 				minh=v2[1];

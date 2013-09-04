@@ -203,7 +203,7 @@ void support_next_window(int next_app) {
 	current_window=NULL;
 	while(i) {
 		i--;
-		element=wincache_fill_element(wp[i]);
+		element=wincache_find_element(wp[i]);
 		if (element==NULL) {
 			continue;
 		}
@@ -248,6 +248,8 @@ void support_next_window(int next_app) {
 		// xcb_flush(conn); // not needed because support_send_dock_up() already does it
 	}
 	free(r);
+	
+	support_set_focus();
 }
 
 void support_close_window() {
@@ -264,7 +266,7 @@ void support_close_window() {
 		i--;
 		window=wp[i];
 		
-		element=wincache_fill_element(window);
+		element=wincache_find_element(window);
 		if (element==NULL) {
 			continue;
 		}
@@ -301,6 +303,10 @@ void support_set_focus() {
 	
 	struct wincache_element *element;
 
+#ifdef DEBUG
+	printf("Set focus\n");
+#endif
+
 	/* set the new input focus */
 	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
 	xcb_window_t *wp=xcb_query_tree_children(r);
@@ -309,10 +315,13 @@ void support_set_focus() {
 		i--;
 		window=wp[i];
 		
-		element=wincache_fill_element(window);
+		element=wincache_find_element(window);
 		if (element==NULL) {
 			continue;
 		}
+#ifdef DEBUG
+		printf("Mapped: %d, input flag: %d, type: %d\n",element->mapped,element->input_flag,element->type);
+#endif
 
 		if ((element->mapped)&&(element->input_flag)&&(element->type!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
 			xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,window,XCB_TIME_CURRENT_TIME);

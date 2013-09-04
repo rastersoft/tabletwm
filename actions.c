@@ -146,8 +146,6 @@ void action_configure_request(xcb_generic_event_t *e) {
 	struct support_new_size sizes;
 	memset(&sizes,0,sizeof(struct support_new_size));
 
-	printf("Configure %d\n",ee->window);
-
 	i=0;
 	if (ee->value_mask&XCB_CONFIG_WINDOW_X) {
 		sizes.new_x=1;

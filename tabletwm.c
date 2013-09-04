@@ -36,8 +36,6 @@
 #include "init.h"
 #include "actions.h"
 
-//#define VALGRIND_DEBUG
-
 
 int main() {
 
@@ -53,7 +51,7 @@ int main() {
 	support_capture_key(XCB_MOD_MASK_1,23); // Alt+TAB
 	support_capture_key(XCB_MOD_MASK_1,70); // Alt+F4
 
-#ifdef VALGRIND_DEBUG
+#ifdef DEBUG
 	support_capture_key(XCB_MOD_MASK_1,71); // Alt+F5 for VALGRIND tests
 #endif
 

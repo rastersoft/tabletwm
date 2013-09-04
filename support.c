@@ -243,8 +243,6 @@ void support_next_window(int next_app) {
 		const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
 		/* Move the window to the top of the stack */
 		xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
-		printf("Move window %d to top\n",element->window);
-
 		support_send_dock_up(wp);
 		// xcb_flush(conn); // not needed because support_send_dock_up() already does it
 	}

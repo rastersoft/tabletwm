@@ -25,6 +25,8 @@
 
 #define TWM_NAME "tabletwm"
 
+#define DEBUG
+
 enum TWM_ATOM_DEFS {
 	TWM_ATOM_WM_SIZE_HINTS=0,
 	TWM_ATOM_WM_NORMAL_HINTS,

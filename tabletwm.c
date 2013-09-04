@@ -44,18 +44,9 @@ int main() {
 
 	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
 	xcb_change_window_attributes(conn,scr->root,XCB_CW_EVENT_MASK,v);
-	// grab ALT (to allow to use Alt+TAB and Ctrl+TAB)
 	support_capture_key(XCB_MOD_MASK_CONTROL,23); // Ctrl+TAB
 	support_capture_key(XCB_MOD_MASK_1,23); // Alt+TAB
 	support_capture_key(XCB_MOD_MASK_1,70); // Alt+F4
-
-	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_CONTROL,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Ctrl+TAB
-	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_1,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Alt+TAB
-	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_CONTROL|XCB_MOD_MASK_2,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Ctrl+TAB+NumLock
-	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_1|XCB_MOD_MASK_2,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Alt+TAB+NumLock
-	// grab F4 (to allow to use Alt+F4)
-	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_1,70,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Alt+F4
-	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_1|XCB_MOD_MASK_2,70,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Alt+F4+NumLock
 
 	/* detect changes in screen size with xrandr */
 	xcb_randr_query_version_reply_t *r=xcb_randr_query_version_reply(conn,xcb_randr_query_version(conn,1,1),0);
@@ -63,9 +54,9 @@ int main() {
 		free(r);
 		xcb_randr_select_input(conn,scr->root,XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE);
 
-		const xcb_query_extension_reply_t *r=xcb_get_extension_data(conn,&xcb_randr_id);
-		xrandr=r->first_event;
-		free((void *)r);
+		const xcb_query_extension_reply_t *r2=xcb_get_extension_data(conn,&xcb_randr_id);
+		xrandr=r2->first_event;
+		free((void *)r2);
 	}
 
 	xcb_flush(conn);
@@ -118,6 +109,7 @@ int main() {
 		}
 		free(e);
 	}
+	free(e);
 	xcb_disconnect(conn);
 	return(0);
 }

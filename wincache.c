@@ -36,6 +36,7 @@ void wincache_init_element(struct wincache_element *element) {
 	element->filled=0;
 	element->class_name=NULL;
 	element->instance=NULL;
+	element->input_flag=0;
 
 }
 
@@ -115,18 +116,21 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	xcb_get_property_cookie_t normal_hints_cookie;
 	xcb_get_property_cookie_t size_hints_cookie;
 	xcb_get_property_cookie_t wmclass_cookie;
+	xcb_get_property_cookie_t hints_cookie;
 
 	xcb_get_property_reply_t *window_type;
 	xcb_get_property_reply_t *transient_for;
 	xcb_get_property_reply_t *normal_hints;
 	xcb_get_property_reply_t *size_hints;
 	xcb_get_property_reply_t *wmclass;
+	xcb_get_property_reply_t *window_hints;
 	
 	transient_for_cookie   = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1);
 	window_type_cookie     = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
 	wmclass_cookie         = xcb_icccm_get_wm_class_unchecked(conn,window);
 	normal_hints_cookie    = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,0,1);
 	size_hints_cookie      = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,5,4);
+	hints_cookie           = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_HINTS],XCB_ATOM_WM_HINTS,0,2);
 
 	xcb_flush(conn);
 	
@@ -157,6 +161,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	}
 
 	normal_hints = xcb_get_property_reply(conn,normal_hints_cookie,0);
+	size_hints = xcb_get_property_reply(conn,size_hints_cookie,0);
 
 	element->resizable=1; // by default, all windows are resizable
 
@@ -168,7 +173,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 			uint32_t *v2,j;
 			int32_t minw,minh,maxw,maxh;
 
-			size_hints = xcb_get_property_reply(conn,size_hints_cookie,0);
+			
 			if (size_hints) {
 				v2=((uint32_t *)(xcb_get_property_value(size_hints)));
 				minw=v2[0];
@@ -178,10 +183,23 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 				if ((size_hints->length!=0)&&(minw!=0)&&(minh!=0)&&(maxw!=0)&&(maxh!=0)&&(minh==maxh)&&(minw==maxw)) {
 					element->resizable=0;
 				}
-				free(size_hints);
 			}
 		}
 	}
+	free(normal_hints);
+	free(size_hints);
+
+	window_hints = xcb_get_property_reply(conn,hints_cookie,0);
+	
+	element->input_flag=1;
+	if ((window_hints)&&(window_hints->length>1)) {
+		uint32_t *data=((uint32_t *)(xcb_get_property_value(window_hints)));
+		if ((data[0]&0x01)&&(data[1]==0)) {
+			element->input_flag=0;
+		}
+	}
+	free(window_hints);
+
 	element->filled=1;
 	return (element);
 }

@@ -87,6 +87,7 @@ struct wincache_element {
 	uint8_t  mapped;
 	uint8_t  resizable;
 	uint8_t  is_transient;
+	uint8_t  input_flag;
 };
 
 extern struct wincache_element wincache_list;

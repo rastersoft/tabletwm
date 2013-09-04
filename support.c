@@ -166,11 +166,7 @@ void support_next_window() {
 
 void support_close_window() {
 
-	xcb_get_window_attributes_cookie_t attr_cookie;
-	xcb_get_property_cookie_t          window_type_cookie;
-	xcb_get_window_attributes_reply_t *w_attr;
-	xcb_get_property_reply_t          *window_type;
-	uint32_t window_type_i;
+	struct wincache_element *element;
 	xcb_window_t window;
 	
 	/* delete window */
@@ -181,21 +177,14 @@ void support_close_window() {
 		/* find top-most mapped top-level window, and WM_DELETE_WINDOW it */
 		i--;
 		window=wp[i];
-		attr_cookie=xcb_get_window_attributes_unchecked(conn,window);
-		window_type_cookie = xcb_get_property(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
-		xcb_flush(conn);
-		xcb_get_window_attributes_reply_t *w_attr=xcb_get_window_attributes_reply(conn,attr_cookie,0);
-		window_type = xcb_get_property_reply(conn,window_type_cookie,0);
-		if (window_type) {
-			// An atom value never has the three upper bits set, so 0xFFFFFFFF is an invalid atom value, and we can use it as a "not-defined" marker
-			window_type_i = window_type->length==0 ? 0xFFFFFFFF : *((uint32_t *)(xcb_get_property_value(window_type)));
-		} else {
-			window_type_i = 0xFFFFFFFF;
+		
+		element=wincache_find_element(window);
+		if (element==NULL) {
+			continue;
 		}
-		free(window_type);
 
 		// DOCK windows must not be close
-		if ((w_attr->map_state==XCB_MAP_STATE_VIEWABLE)&&(window_type_i!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+		if ((element->mapped)&&(element->type!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
 			xcb_client_message_event_t e;
 			e.response_type=XCB_CLIENT_MESSAGE;
 			e.format=32;
@@ -209,10 +198,8 @@ void support_close_window() {
 			e.data.data32[4]=0;
 			xcb_send_event(conn,0,window,XCB_EVENT_MASK_NO_EVENT,(const char *)&e);
 			xcb_flush(conn);
-			free(w_attr);
 			break;
 		}
-		free(w_attr);
 	}
 	free(reply);
 	
@@ -221,16 +208,12 @@ void support_close_window() {
 
 void support_set_focus() {
 
-	xcb_get_window_attributes_cookie_t attr_cookie;
-	xcb_get_property_cookie_t          hints_cookie;
-	xcb_get_property_cookie_t          window_type_cookie;
-	xcb_get_window_attributes_reply_t *w_attr;
-	xcb_get_property_reply_t          *window_hints;
-	xcb_get_property_reply_t          *window_type;
 	uint32_t *data;
 	uint32_t window_type_i;
 	xcb_window_t window;
 	uint32_t final_window=XCB_WINDOW_NONE;
+	
+	struct wincache_element *element;
 
 	/* set the new input focus */
 	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
@@ -239,34 +222,17 @@ void support_set_focus() {
 	while(i) {
 		i--;
 		window=wp[i];
-		attr_cookie        = xcb_get_window_attributes_unchecked(conn,window);
-		hints_cookie       = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_HINTS],XCB_ATOM_WM_HINTS,0,2);
-		window_type_cookie = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
-		xcb_flush(conn);
-		w_attr       = xcb_get_window_attributes_reply(conn,attr_cookie,0);
-		window_hints = xcb_get_property_reply(conn,hints_cookie,0);
-		window_type = xcb_get_property_reply(conn,window_type_cookie,0);
-		if (window_type) {
-			// An atom value never has the three upper bits set, so 0xFFFFFFFF is an invalid atom value, and we can use it as a "not-defined" marker
-			window_type_i = window_type->length<1 ? 0xFFFFFFFF : *((uint32_t *)(xcb_get_property_value(window_type)));
-		} else {
-			window_type_i = 0xFFFFFFFF;
+		
+		element=wincache_find_element(window);
+		if (element==NULL) {
+			continue;
 		}
-		free(window_type);
 
-		if ((w_attr)&&(window_hints)&&(window_hints->length>1)) {
-			data=((uint32_t *)(xcb_get_property_value(window_hints)));
-			// to receive focus, a window must be viewable, have the INPUT flag and not be a DOCK
-			if ((w_attr->map_state==XCB_MAP_STATE_VIEWABLE)&&(data[0]&0x01)&&(data[1])&&(window_type_i!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
-				xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,window,XCB_TIME_CURRENT_TIME);
-				final_window=window;
-				free(w_attr);
-				free(window_hints);
-				break;
-			}
+		if ((element->mapped)&&(element->input_flag)&&(element->type!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+			xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,window,XCB_TIME_CURRENT_TIME);
+			final_window=window;
+			break;
 		}
-		free(w_attr);
-		free(window_hints);
 	}
 	free(r);
 	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_ACTIVE_WINDOW],XCB_ATOM_WINDOW,32,1,&final_window);

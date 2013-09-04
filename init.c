@@ -24,6 +24,7 @@
 
 #include "globals.h"
 #include "init.h"
+#include "wincache.h"
 
 void init_tabletwm() {
 
@@ -76,7 +77,10 @@ void init_tabletwm() {
 		"WM_CLASS",
 		"WM_STATE",
 		"_NET_ACTIVE_WINDOW",
+		"WM_HINTS",
 	};
+
+	wincache_init();
 
 	conn=xcb_connect(0,0);
 	assert(conn);

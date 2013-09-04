@@ -24,5 +24,9 @@ xcb_atom_t atoms[TWM_ATOM_LAST_VALUE];
 uint16_t width;
 uint16_t height;
 
+struct wincache_element wincache_list;
+
+char keep_running;
+
 xcb_connection_t *conn;
 xcb_screen_t *scr;

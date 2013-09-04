@@ -30,6 +30,8 @@
 #include <xcb/xcb_atom.h>
 #include <xcb/randr.h>
 
+#include <signal.h>
+
 #include "globals.h"
 #include "init.h"
 #include "actions.h"
@@ -43,6 +45,10 @@ int main() {
 	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
 	xcb_change_window_attributes(conn,scr->root,XCB_CW_EVENT_MASK,v);
 	// grab ALT (to allow to use Alt+TAB and Ctrl+TAB)
+	support_capture_key(XCB_MOD_MASK_CONTROL,23); // Ctrl+TAB
+	support_capture_key(XCB_MOD_MASK_1,23); // Alt+TAB
+	support_capture_key(XCB_MOD_MASK_1,70); // Alt+F4
+
 	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_CONTROL,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Ctrl+TAB
 	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_1,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Alt+TAB
 	xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_CONTROL|XCB_MOD_MASK_2,23,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // Ctrl+TAB+NumLock
@@ -65,7 +71,9 @@ int main() {
 	xcb_flush(conn);
 	xcb_generic_event_t *e;
 	
-	while((e=xcb_wait_for_event(conn))) {
+	keep_running=1;
+	
+	while((e=xcb_wait_for_event(conn))&&(keep_running)) {
 		uint8_t r=e->response_type&~0x80;
 		
 		if (r>=xrandr) {
@@ -80,12 +88,13 @@ int main() {
 					action_key(e);
 				break;
 				case (XCB_CREATE_NOTIFY):
-					/*xcb_create_notify_event_t *ee=(xcb_create_notify_event_t *)e;*/
+					//xcb_create_notify_event_t *ee=(xcb_create_notify_event_t *)e;
 				break;
 				case(XCB_UNMAP_NOTIFY):
 					action_unmap_notify(e);
 				break;
 				case(XCB_DESTROY_NOTIFY):
+					action_destroy_notify(e);
 				break;
 				case(XCB_MAP_REQUEST):
 					action_map_request(e);
@@ -94,7 +103,7 @@ int main() {
 					action_configure_request(e);
 				break;
 				case(XCB_CIRCULATE_REQUEST):
-					/*xcb_circulate_request_event_t *ee=(xcb_circulate_request_event_t *)e;*/
+					//xcb_circulate_request_event_t *ee=(xcb_circulate_request_event_t *)e;
 				break;
 
 				case(0): {
@@ -110,5 +119,5 @@ int main() {
 		free(e);
 	}
 	xcb_disconnect(conn);
-	return(-1);
+	return(0);
 }

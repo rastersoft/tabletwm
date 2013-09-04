@@ -69,8 +69,27 @@ enum TWM_ATOM_DEFS {
 	
 	TWM_ATOM_WM_STATE,
 	TWM_ATOM__NET_ACTIVE_WINDOW,
+	
+	TWM_ATOM_WM_HINTS,
 
 	TWM_ATOM_LAST_VALUE};
+
+struct wincache_element {
+
+	struct wincache_element *prev;
+	struct wincache_element *next;
+
+	char    *class_name;
+	char    *instance;
+	uint32_t window;
+	uint32_t type;
+	uint8_t  filled;
+	uint8_t  mapped;
+	uint8_t  resizable;
+	uint8_t  is_transient;
+};
+
+extern struct wincache_element wincache_list;
 
 extern xcb_atom_t atoms[];
 
@@ -79,5 +98,7 @@ extern uint16_t height;
 
 extern xcb_connection_t *conn;
 extern xcb_screen_t *scr;
+
+extern char keep_running;
 
 #endif // _H_GLOBALS_

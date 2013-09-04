@@ -25,6 +25,7 @@
 #include "globals.h"
 #include "actions.h"
 #include "support.h"
+#include "wincache.h"
 
 void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 
@@ -60,7 +61,14 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 
 void action_unmap_notify(xcb_generic_event_t *e) {
 
+	struct wincache_element *element;
+
 	xcb_unmap_notify_event_t *ee=(xcb_unmap_notify_event_t *)e;
+
+	element=wincache_find_element(ee->window);
+	if (element) {
+		element->mapped=0;
+	}
 
 	uint32_t data[]={0,XCB_WINDOW_NONE}; // Withdrawn status
 	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,ee->window,atoms[TWM_ATOM_WM_STATE],XCB_ATOM_CARDINAL,32,2,data);
@@ -69,10 +77,25 @@ void action_unmap_notify(xcb_generic_event_t *e) {
 	support_set_focus();
 }
 
+void action_destroy_notify(xcb_generic_event_t *e) {
+
+	struct wincache_element *element;
+
+	xcb_destroy_notify_event_t *ee=(xcb_destroy_notify_event_t *)e;
+
+	wincache_destroy_element(ee->window);
+}
+
 void action_map_request(xcb_generic_event_t *e) {
+
+	struct wincache_element *element;
 
 	xcb_map_request_event_t *ee=(xcb_map_request_event_t *)e;
 
+	element=wincache_fill_element(ee->window);
+	if (element) {
+		element->mapped=1;
+	}
 	xcb_map_window(conn,ee->window);
 
 	uint32_t data[]={1,XCB_WINDOW_NONE}; // Normal status
@@ -183,8 +206,9 @@ void action_key(xcb_generic_event_t *e) {
 	// Alt+F4
 	if ((ee->detail==70)&&(ee->state&XCB_MOD_MASK_1)) {
 		support_close_window();
+		return;
 	}
-	
+	keep_running=0;
 	printf("Captura de tecla: %d %X\n",ee->detail,ee->state);
 	
 }

@@ -40,6 +40,7 @@ struct support_new_size {
 void support_capture_key(uint32_t mods,uint32_t key);
 void support_calculate_new_size(xcb_window_t window, struct support_new_size *size);
 
+void support_next_window(int next_app);
 void support_close_window();
 void support_set_focus();
 

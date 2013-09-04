@@ -36,6 +36,9 @@
 #include "init.h"
 #include "actions.h"
 
+//#define VALGRIND_DEBUG
+
+
 int main() {
 
 	uint8_t xrandr;
@@ -47,6 +50,10 @@ int main() {
 	support_capture_key(XCB_MOD_MASK_CONTROL,23); // Ctrl+TAB
 	support_capture_key(XCB_MOD_MASK_1,23); // Alt+TAB
 	support_capture_key(XCB_MOD_MASK_1,70); // Alt+F4
+
+#ifdef VALGRIND_DEBUG
+	support_capture_key(XCB_MOD_MASK_1,71); // Alt+F5 for VALGRIND tests
+#endif
 
 	/* detect changes in screen size with xrandr */
 	xcb_randr_query_version_reply_t *r=xcb_randr_query_version_reply(conn,xcb_randr_query_version(conn,1,1),0);

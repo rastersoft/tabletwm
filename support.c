@@ -153,15 +153,87 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	}
 }
 
-void support_next_app() {
+void support_next_window(int next_app) {
 
+	uint16_t i;
+	uint32_t *data;
+	uint32_t window_type_i;
+	xcb_window_t window;
+	uint32_t final_window=XCB_WINDOW_NONE;
+	
+	struct wincache_element *element,*current_window;
 
-}
+	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+	xcb_window_t *wp=xcb_query_tree_children(r);
 
-void support_next_window() {
+	i = r->children_len;
+	current_window=NULL;
+	while(i) {
+		i--;
+		window=wp[i];
+		
+		element=wincache_find_element(window);
+		if (element==NULL) {
+			continue;
+		}
 
+		if ((element->mapped)&&(element->type!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+			current_window=element;
+			break; // this is the current top window
+		}
+	}
+	
+	if (current_window==NULL) {
+		free(r);
+		return;
+	}
+	
+	for(i=0;i<r->children_len;i++) {
+		window=wp[i];
+		element=wincache_find_element(window);
+		if (element==NULL) {
+			continue;
+		}
+		if ((element->mapped==0)||(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+			element=NULL;
+			continue;
+		}
+		if (next_app) { // show the next window of other app class in the list
+			if (0!=strcmp(current_window->class_name,element->class_name)) { // found a valid window of the same class; move to top
+				break;
+			}
+		} else { // show the next window of an app with the same class
+			if (0==strcmp(current_window->class_name,element->class_name)) { // found a valid window of the same class; move to top
+				break;
+			}
+		}
+		element=NULL;
+	}
+	
+	if (element!=NULL) {
+		const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
+		/* Move the window to the top of the stack */
+		xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
+		printf("Move window %d to top\n",element->window);
 
+		// Now move all the DOCK windows, to ensure that the are always on top
+		i = r->children_len;
+		while(i) {
+			i--;
+			window=wp[i];
+		
+			element=wincache_find_element(window);
+			if (element==NULL) {
+				continue;
+			}
 
+			if ((element->mapped)&&(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+				xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
+			}
+		}
+		xcb_flush(conn);
+	}
+	free(r);
 }
 
 void support_close_window() {

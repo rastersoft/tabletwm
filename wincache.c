@@ -153,11 +153,15 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	
 	wmclass = xcb_get_property_reply(conn,wmclass_cookie,0);
 	xcb_icccm_get_wm_class_reply_t wmclass_data;
-	if ((wmclass)&&(wmclass->length!=0)) {
-		xcb_icccm_get_wm_class_from_reply(&wmclass_data,wmclass);
-		element->class_name=strdup(wmclass_data.class_name);
-		element->instance=strdup(wmclass_data.instance_name);
-		xcb_icccm_get_wm_class_reply_wipe(&wmclass_data);
+	if (wmclass) {
+		if (wmclass->length!=0) {
+			xcb_icccm_get_wm_class_from_reply(&wmclass_data,wmclass);
+			element->class_name=strdup(wmclass_data.class_name);
+			element->instance=strdup(wmclass_data.instance_name);
+			xcb_icccm_get_wm_class_reply_wipe(&wmclass_data);
+		} else {
+			free(wmclass);
+		}
 	}
 
 	normal_hints = xcb_get_property_reply(conn,normal_hints_cookie,0);

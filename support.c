@@ -153,26 +153,56 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	}
 }
 
+void support_send_dock_up(xcb_window_t *wp2) {
+
+	uint16_t i;
+	struct wincache_element *element;
+	xcb_window_t *wp;
+	xcb_query_tree_reply_t *r;
+
+	const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
+
+	if (wp2==NULL) {
+		r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+		wp=xcb_query_tree_children(r);
+	} else {
+		wp=wp2;
+	}
+
+	// Move all the DOCK windows, to ensure that the are always on top
+	for(i=0;i<r->children_len;i++) {
+		element=wincache_find_element(wp[i]);
+		if (element==NULL) {
+			continue;
+		}
+		if ((element->mapped)&&(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+			xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
+		}
+	}
+	xcb_flush(conn);
+	if (wp2==NULL) {
+		free(r);
+	}
+}
+
 void support_next_window(int next_app) {
 
 	uint16_t i;
 	uint32_t *data;
 	uint32_t window_type_i;
-	xcb_window_t window;
+	xcb_window_t *wp;
 	uint32_t final_window=XCB_WINDOW_NONE;
 	
 	struct wincache_element *element,*current_window;
 
 	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-	xcb_window_t *wp=xcb_query_tree_children(r);
+	wp=xcb_query_tree_children(r);
 
 	i = r->children_len;
 	current_window=NULL;
 	while(i) {
 		i--;
-		window=wp[i];
-		
-		element=wincache_find_element(window);
+		element=wincache_find_element(wp[i]);
 		if (element==NULL) {
 			continue;
 		}
@@ -189,8 +219,7 @@ void support_next_window(int next_app) {
 	}
 	
 	for(i=0;i<r->children_len;i++) {
-		window=wp[i];
-		element=wincache_find_element(window);
+		element=wincache_find_element(wp[i]);
 		if (element==NULL) {
 			continue;
 		}
@@ -216,22 +245,8 @@ void support_next_window(int next_app) {
 		xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
 		printf("Move window %d to top\n",element->window);
 
-		// Now move all the DOCK windows, to ensure that the are always on top
-		i = r->children_len;
-		while(i) {
-			i--;
-			window=wp[i];
-		
-			element=wincache_find_element(window);
-			if (element==NULL) {
-				continue;
-			}
-
-			if ((element->mapped)&&(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
-				xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
-			}
-		}
-		xcb_flush(conn);
+		support_send_dock_up(wp);
+		// xcb_flush(conn); // not needed because support_send_dock_up() already does it
 	}
 	free(r);
 }

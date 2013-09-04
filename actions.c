@@ -132,7 +132,7 @@ void action_map_request(xcb_generic_event_t *e) {
 	}
 
 	support_set_focus();
-
+	support_send_dock_up(NULL); // send DOCK windows top
 }
 
 void action_configure_request(xcb_generic_event_t *e) {

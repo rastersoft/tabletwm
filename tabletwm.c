@@ -43,6 +43,8 @@ int main() {
 
 	uint8_t xrandr;
 
+	printf("TabletWM version 0.1\n");
+
 	init_tabletwm();
 
 	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};

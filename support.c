@@ -153,7 +153,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	}
 }
 
-void support_send_dock_up(xcb_window_t *wp2) {
+void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
 
 	uint16_t i;
 	struct wincache_element *element;
@@ -162,11 +162,12 @@ void support_send_dock_up(xcb_window_t *wp2) {
 
 	const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
 
-	if (wp2==NULL) {
+	if (r2==NULL) {
 		r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
 		wp=xcb_query_tree_children(r);
 	} else {
 		wp=wp2;
+		r=r2;
 	}
 
 	// Move all the DOCK windows, to ensure that the are always on top
@@ -180,7 +181,7 @@ void support_send_dock_up(xcb_window_t *wp2) {
 		}
 	}
 	xcb_flush(conn);
-	if (wp2==NULL) {
+	if (r2==NULL) {
 		free(r);
 	}
 }
@@ -202,7 +203,7 @@ void support_next_window(int next_app) {
 	current_window=NULL;
 	while(i) {
 		i--;
-		element=wincache_find_element(wp[i]);
+		element=wincache_fill_element(wp[i]);
 		if (element==NULL) {
 			continue;
 		}
@@ -243,7 +244,7 @@ void support_next_window(int next_app) {
 		const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
 		/* Move the window to the top of the stack */
 		xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
-		support_send_dock_up(wp);
+		support_send_dock_up(r,wp);
 		// xcb_flush(conn); // not needed because support_send_dock_up() already does it
 	}
 	free(r);
@@ -263,7 +264,7 @@ void support_close_window() {
 		i--;
 		window=wp[i];
 		
-		element=wincache_find_element(window);
+		element=wincache_fill_element(window);
 		if (element==NULL) {
 			continue;
 		}
@@ -308,7 +309,7 @@ void support_set_focus() {
 		i--;
 		window=wp[i];
 		
-		element=wincache_find_element(window);
+		element=wincache_fill_element(window);
 		if (element==NULL) {
 			continue;
 		}

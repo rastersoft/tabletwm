@@ -29,7 +29,6 @@
 void init_tabletwm() {
 
 	xcb_void_cookie_t void_cookie;
-	xcb_window_t win;
 	xcb_intern_atom_cookie_t atom_cookie[TWM_ATOM_LAST_VALUE];
 	uint32_t v[]={XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY|XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
 	int i;
@@ -87,9 +86,25 @@ void init_tabletwm() {
 
 	scr=xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
 	width=scr->width_in_pixels;
-	height=scr->height_in_pixels;
+	height=scr->height_in_pixels; // reserve the bottom part for the 1pixel-height, collapsed menu bar
 
 	xcb_change_window_attributes(conn,scr->root,XCB_CW_EVENT_MASK,v);
+
+	xcb_depth_iterator_t depth_iter;
+	xcb_visualid_t    root_visual = { 0 };
+	visual_type = NULL;
+	
+	for (depth_iter = xcb_screen_allowed_depths_iterator (scr); depth_iter.rem; xcb_depth_next (&depth_iter)) {
+		xcb_visualtype_iterator_t visual_iter;
+
+		visual_iter = xcb_depth_visuals_iterator (depth_iter.data);
+		for (; visual_iter.rem; xcb_visualtype_next (&visual_iter)) {
+			if (scr->root_visual == visual_iter.data->visual_id) {
+				visual_type = visual_iter.data;
+				break;
+			}
+		}
+	}
 
 	/* get atoms */
 	for(i=0;i<TWM_ATOM_LAST_VALUE;i++) {
@@ -105,7 +120,6 @@ void init_tabletwm() {
 		free(atom_reply);
 	};
 
-	i=1;
 	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM_WM_DELETE_WINDOW]);
 	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE]);
 	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP]);
@@ -137,23 +151,36 @@ void init_tabletwm() {
 	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_ABOVE]);
 	xcb_change_property(conn,XCB_PROP_MODE_APPEND,scr->root,atoms[TWM_ATOM__NET_SUPPORTED],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_ACTION_BELOW]);
 
-
-	win = xcb_generate_id(conn);
-
-	// fake window to ensure that the window manager is recognized as an Extended Window Manager Hints WM
-	void_cookie=xcb_create_window_checked (conn,XCB_COPY_FROM_PARENT,win,scr->root,0,0,1,1,1,XCB_WINDOW_CLASS_INPUT_OUTPUT,scr->root_visual,0,NULL);
+	// This window contains the menu and the virtual keyboard (when showed)
+	// It is also used to ensure that the window manager is recognized as an Extended Window Manager Hints WM
+	// By default it occupies one pixel at the bottom of the screen, to allow to detect when the mouse is moved to the bottom
+	key_win.window = xcb_generate_id(conn);
+	uint32_t values[1] = {XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_ENTER_WINDOW|XCB_EVENT_MASK_LEAVE_WINDOW};
+	void_cookie=xcb_create_window_checked (conn,XCB_COPY_FROM_PARENT,key_win.window,scr->root,0,height-1,width,1,0,XCB_WINDOW_CLASS_INPUT_OUTPUT,scr->root_visual,XCB_CW_EVENT_MASK,values);
 
 	xcb_flush(conn);
 
 	if (xcb_request_check(conn,void_cookie)) {
 		printf("Can't create the fake window\n");
 	} else {
+		key_win.surface=cairo_xcb_surface_create(conn,key_win.window,visual_type,width,10);
+		printf("Error: %s\n",cairo_status_to_string(cairo_surface_status(key_win.surface)));
+		key_win.cr=cairo_create(key_win.surface);
 		// Set the _NET_SUPPORTING_WM_CHECK property pointing to the window ID in both the root and fake windows
 		// Also set the WM_NAME property in both windows to TWM_NAME
-		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&win);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&key_win.window);
 		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
-		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,win,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&win);
-		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,win,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,key_win.window,atoms[TWM_ATOM__NET_SUPPORTING_WM_CHECK],XCB_ATOM_WINDOW,32,1,&key_win.window);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,key_win.window,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
+		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,key_win.window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK]);
+		xcb_map_window(conn,key_win.window);
 		xcb_flush(conn);
+		key_win.cache=wincache_fill_element(key_win.window);
+		key_win.cache->mapped=1;
+		key_win.possition=0;
+		key_win.has_keyboard=0;
+		key_win.width=width;
+		key_win.height=1;
+		key_win.enabled_by_mouse=0;
 	}
 }

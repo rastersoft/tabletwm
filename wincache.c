@@ -138,14 +138,8 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	transient_for = xcb_get_property_reply(conn,transient_for_cookie,0);
 	if ((transient_for)&&(transient_for->length!=0)) {
 		element->is_transient = 1;
-#ifdef DEBUG
-		printf("Transient\n");
-#endif
 	} else {
 		element->is_transient = 0;
-#ifdef DEBUG
-		printf("Not transient\n");
-#endif
 	}
 	free(transient_for);
 
@@ -153,14 +147,8 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	// An atom value never has the three upper bits set, so 0xFFFFFFFF is an invalid atom value, and we can use it as a "not-defined" marker
 	if ((window_type==NULL)||(window_type->length==0)) {
 		element->type = 0xFFFFFFFF;
-#ifdef DEBUG
-		printf("Type unknown\n");
-#endif
 	} else {
 		element->type= ((uint32_t *)(xcb_get_property_value(window_type)))[0];
-#ifdef DEBUG
-		printf("Type: %d\n",element->type);
-#endif
 	}
 	free(window_type);
 	
@@ -172,9 +160,6 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 			element->class_name=strdup(wmclass_data.class_name);
 			element->instance=strdup(wmclass_data.instance_name);
 			xcb_icccm_get_wm_class_reply_wipe(&wmclass_data);
-#ifdef DEBUG
-		printf("Class: %s, instance: %s\n",element->class_name,element->instance);
-#endif
 		} else {
 			free(wmclass);
 		}
@@ -202,9 +187,6 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 				maxh=v2[3];
 				if ((size_hints->length!=0)&&(minw!=0)&&(minh!=0)&&(maxw!=0)&&(maxh!=0)&&(minh==maxh)&&(minw==maxw)) {
 					element->resizable=0;
-#ifdef DEBUG
-					printf("Not resizable\n");
-#endif
 				}
 			}
 		}
@@ -219,9 +201,6 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 		uint32_t *data=((uint32_t *)(xcb_get_property_value(window_hints)));
 		if ((data[0]&0x01)&&(data[1]==0)) {
 			element->input_flag=0;
-#ifdef DEBUG
-			printf("No input flag\n");
-#endif
 		}
 	}
 	free(window_hints);

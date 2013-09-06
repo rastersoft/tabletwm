@@ -22,10 +22,12 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
+#include <cairo/cairo.h>
+#include <cairo/cairo-xcb.h>
 
 #define TWM_NAME "tabletwm"
 
-//#define DEBUG
+#define DEBUG
 
 enum TWM_ATOM_DEFS {
 	TWM_ATOM_WM_SIZE_HINTS=0,
@@ -101,7 +103,21 @@ extern uint16_t height;
 
 extern xcb_connection_t *conn;
 extern xcb_screen_t *scr;
+extern xcb_visualtype_t *visual_type;
 
+struct key_win_s {
+	xcb_window_t window;
+	struct wincache_element *cache;
+	uint8_t possition; // 0: minimized; 1: expanded
+	uint8_t has_keyboard; // 0: no keyboard bottom; 1: no keyboard top; 2: keyboard bottom; 3: keyboard top
+	uint8_t enabled_by_mouse;
+	uint32_t width;
+	uint32_t height;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+};
+
+extern struct key_win_s key_win;
 extern char keep_running;
 
 #endif // _H_GLOBALS_

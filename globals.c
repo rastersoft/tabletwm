@@ -30,3 +30,6 @@ char keep_running;
 
 xcb_connection_t *conn;
 xcb_screen_t *scr;
+xcb_visualtype_t *visual_type;
+
+struct key_win_s key_win;

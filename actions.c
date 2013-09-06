@@ -26,6 +26,7 @@
 #include "actions.h"
 #include "support.h"
 #include "wincache.h"
+#include "menuwin.h"
 
 void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 
@@ -74,6 +75,7 @@ void action_unmap_notify(xcb_generic_event_t *e) {
 	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,ee->window,atoms[TWM_ATOM_WM_STATE],XCB_ATOM_CARDINAL,32,2,data);
 	xcb_flush(conn);
 
+	support_send_dock_up(NULL,NULL);
 	support_set_focus();
 }
 
@@ -131,8 +133,8 @@ void action_map_request(xcb_generic_event_t *e) {
 		xcb_configure_window(conn,ee->window,flags,v);
 	}
 
-	support_set_focus();
 	support_send_dock_up(NULL,NULL); // send DOCK windows top
+	support_set_focus();
 }
 
 void action_configure_request(xcb_generic_event_t *e) {
@@ -193,10 +195,69 @@ void action_configure_request(xcb_generic_event_t *e) {
 		v[i]=ee->stack_mode;
 	}
 	xcb_configure_window(conn,ee->window,ee->value_mask,v);
-	xcb_flush(conn);
 	if (ee->value_mask&XCB_CONFIG_WINDOW_STACK_MODE) {
+		support_send_dock_up(NULL,NULL); // send DOCK windows top
 		support_set_focus();
+	} else {
+		xcb_flush(conn);
 	}
+}
+
+void action_expose(xcb_generic_event_t *e) {
+
+	xcb_expose_event_t *ee=(xcb_expose_event_t *)e;
+	if (ee->window==key_win.window) {
+		menuwin_expose(ee);
+	}
+}
+
+void action_mouse_enter(xcb_generic_event_t *e) {
+
+	if (key_win.possition==0) {
+		key_win.has_keyboard&=2; // disable keyboard, but keep where it was before
+		key_win.possition=1; // enable the menu
+		key_win.enabled_by_mouse=1;
+		menuwin_set_window();
+	}
+}
+
+void action_mouse_leave(xcb_generic_event_t *e) {
+
+	if ((key_win.possition==1)&&(key_win.enabled_by_mouse==1)) {
+		key_win.possition=0; // disable the menu
+		key_win.enabled_by_mouse=0;
+		menuwin_set_window();
+	}
+}
+
+void action_mouse_click(xcb_generic_event_t *e) {
+
+	struct xcb_button_press_event_t *ee=(struct xcb_button_press_event_t *)e;
+	
+	int x=(ee->event_x*10)/width;
+	int y=((key_win.height-ee->event_y)*10)/height;
+	
+	if (y==0) { // main buttons row
+	switch(x) {
+	case 0:
+		support_close_window();
+	break;
+	case 4:
+		if (key_win.has_keyboard&0x01) {
+			key_win.has_keyboard^=0x02;
+			menuwin_set_window();
+		}
+	break;
+	case 5:
+	case 6:
+		support_next_window(1);
+	break;
+	case 7:
+		support_next_window(0);
+	break;
+	}
+	}
+
 }
 
 void action_key(xcb_generic_event_t *e) {
@@ -221,6 +282,33 @@ void action_key(xcb_generic_event_t *e) {
 		return;
 	}
 
-	keep_running=0;
-	printf("Captura de tecla: %d %X\n",ee->detail,ee->state);
+	// MENU with keyboard
+	if ((ee->detail==135)&&(ee->state&XCB_MOD_MASK_CONTROL)) {	
+		key_win.enabled_by_mouse=0;
+		key_win.possition=1-key_win.possition; // enable/disable the menu
+		if (key_win.possition) {
+			key_win.has_keyboard|=1; // enable keyboard, and put it where it was before
+		} else {
+			key_win.has_keyboard&=2; // disable keyboard, but keep it where it was before
+		}
+		menuwin_set_window();
+	}
+
+	// MENU alone
+	if ((ee->detail==135)&&(!(ee->state&XCB_MOD_MASK_CONTROL))&&(!(ee->state&XCB_MOD_MASK_1))) {
+		key_win.has_keyboard&=2; // disable keyboard, but remember where it was before
+		key_win.possition=1-key_win.possition; // enable/disable the menu
+		key_win.enabled_by_mouse=0;
+		menuwin_set_window();
+	}
+
+#ifdef DEBUG
+	// Alt+F5
+	if ((ee->detail==71)&&(ee->state&XCB_MOD_MASK_1)) {
+		keep_running=0;
+		return;
+	}
+
+	printf("Key capture: %d %X\n",ee->detail,ee->state);
+#endif
 }

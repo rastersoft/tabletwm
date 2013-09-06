@@ -28,10 +28,11 @@
 void support_capture_key(uint32_t mods,uint32_t key) {
 
 	xcb_grab_key(conn,0,scr->root,mods,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key itself
-	xcb_grab_key(conn,0,scr->root,mods|XCB_MOD_MASK_2,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key + NumLock
-	xcb_grab_key(conn,0,scr->root,mods|XCB_MOD_MASK_LOCK,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key + CapsLock
-	xcb_grab_key(conn,0,scr->root,mods|XCB_MOD_MASK_2|XCB_MOD_MASK_LOCK,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key + NumLock + CapsLock
-
+	if (mods!=XCB_MOD_MASK_ANY) {
+		xcb_grab_key(conn,0,scr->root,mods|XCB_MOD_MASK_2,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key + NumLock
+		xcb_grab_key(conn,0,scr->root,mods|XCB_MOD_MASK_LOCK,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key + CapsLock
+		xcb_grab_key(conn,0,scr->root,mods|XCB_MOD_MASK_2|XCB_MOD_MASK_LOCK,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key + NumLock + CapsLock
+	}
 }
 
 void support_calculate_new_size(xcb_window_t window, struct support_new_size *size) {

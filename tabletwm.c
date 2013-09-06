@@ -50,6 +50,8 @@ int main() {
 	support_capture_key(XCB_MOD_MASK_CONTROL,23); // Ctrl+TAB
 	support_capture_key(XCB_MOD_MASK_1,23); // Alt+TAB
 	support_capture_key(XCB_MOD_MASK_1,70); // Alt+F4
+	support_capture_key(XCB_MOD_MASK_ANY,135); // MENU key (between the right WINDOWS key and the right Ctrl key)
+	//xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_ANY,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 
 #ifdef DEBUG
 	support_capture_key(XCB_MOD_MASK_1,71); // Alt+F5 for VALGRIND tests
@@ -71,7 +73,7 @@ int main() {
 	
 	keep_running=1;
 	
-	while((e=xcb_wait_for_event(conn))&&(keep_running)) {
+	while((keep_running)&&(e=xcb_wait_for_event(conn))) {
 		uint8_t r=e->response_type&~0x80;
 		
 		if (r>=xrandr) {
@@ -82,7 +84,7 @@ int main() {
 			}
 		} else {
 			switch(r) {
-				case(XCB_KEY_PRESS):
+				case(XCB_KEY_RELEASE):
 					action_key(e);
 				break;
 				case (XCB_CREATE_NOTIFY):
@@ -103,7 +105,18 @@ int main() {
 				case(XCB_CIRCULATE_REQUEST):
 					//xcb_circulate_request_event_t *ee=(xcb_circulate_request_event_t *)e;
 				break;
-
+				case(XCB_EXPOSE):
+					action_expose(e);
+				break;
+				case(XCB_ENTER_NOTIFY):
+					action_mouse_enter(e);
+				break;
+				case(XCB_LEAVE_NOTIFY):
+					action_mouse_leave(e);
+				break;
+				case(XCB_BUTTON_RELEASE):
+					action_mouse_click(e);
+				break;
 				case(0): {
 					xcb_generic_error_t *ee=(xcb_generic_error_t *)e;
 					printf("error event type %d\n",ee->error_code);
@@ -117,6 +130,7 @@ int main() {
 		free(e);
 	}
 	free(e);
+	wincache_destroy_element(key_win.window);
 	xcb_disconnect(conn);
 	return(0);
 }

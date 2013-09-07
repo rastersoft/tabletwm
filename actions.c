@@ -213,6 +213,7 @@ void action_expose(xcb_generic_event_t *e) {
 
 void action_mouse_enter(xcb_generic_event_t *e) {
 
+	// Expand the menu (without keyboard) if the mouse enters the bottom part of the screen
 	if (key_win.possition==0) {
 		key_win.has_keyboard&=2; // disable keyboard, but keep where it was before
 		key_win.possition=1; // enable the menu
@@ -223,6 +224,8 @@ void action_mouse_enter(xcb_generic_event_t *e) {
 
 void action_mouse_leave(xcb_generic_event_t *e) {
 
+	// Collapse the menu if the mouse leaves it, but only if it was expanded because the mouse entered the bottom part of the screen
+	// Never collapse it if it was expanded with a key
 	if ((key_win.possition==1)&&(key_win.enabled_by_mouse==1)) {
 		key_win.possition=0; // disable the menu
 		key_win.enabled_by_mouse=0;
@@ -238,24 +241,24 @@ void action_mouse_click(xcb_generic_event_t *e) {
 	int y=((key_win.height-ee->event_y)*10)/height;
 	
 	if (y==0) { // main buttons row
-	switch(x) {
-	case 0:
-		support_close_window();
-	break;
-	case 4:
-		if (key_win.has_keyboard&0x01) {
-			key_win.has_keyboard^=0x02;
-			menuwin_set_window();
+		switch(x) {
+		case 0:
+			support_close_window();
+		break;
+		case 4:
+			if (key_win.has_keyboard&0x01) {
+				key_win.has_keyboard^=0x02;
+				menuwin_set_window();
+			}
+		break;
+		case 5:
+		case 6:
+			support_next_window(1);
+		break;
+		case 7:
+			support_next_window(0);
+		break;
 		}
-	break;
-	case 5:
-	case 6:
-		support_next_window(1);
-	break;
-	case 7:
-		support_next_window(0);
-	break;
-	}
 	}
 
 }

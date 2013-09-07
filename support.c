@@ -246,11 +246,14 @@ void support_next_window(int next_app) {
 		/* Move the window to the top of the stack */
 		xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
 		support_send_dock_up(r,wp);
-		// xcb_flush(conn); // not needed because support_send_dock_up() already does it
+		support_set_focus();
+		// xcb_flush(conn); // not needed because support_send_dock_up() and support_set_focus() already do it
+	} else { // no window found
+		if (next_app==1) { // there is only one type of app, but there can be several windows. Let's try to swap between them...
+			support_next_window(0);
+		}
 	}
 	free(r);
-	
-	support_set_focus();
 }
 
 void support_close_window() {

@@ -40,7 +40,7 @@ void menuwin_paint_close_button() {
 
 void menuwin_paint_swap_button() {
 
-	menuwin_paint_button(4,0,1,1,1.0,1.0,1.0);
+	menuwin_paint_button(5,0,1,1,1.0,1.0,1.0);
 	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_move_to(key_win.cr,-0.8,-0.2);
@@ -59,7 +59,7 @@ void menuwin_paint_swap_button() {
 
 void menuwin_paint_change_app_button() {
 
-	menuwin_paint_button(5,0,2,1,1.0,1.0,1.0);
+	menuwin_paint_button(6,0,2,1,1.0,1.0,1.0);
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
 	cairo_rectangle(key_win.cr,-1.0,-0.8,-1.2,1.6);
@@ -120,7 +120,7 @@ void menuwin_paint_change_app_button() {
 
 void menuwin_paint_change_window_button() {
 
-	menuwin_paint_button(7,0,1,1,1.0,1.0,1.0);
+	menuwin_paint_button(8,0,2,1,1.0,1.0,1.0);
 	
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
@@ -141,7 +141,7 @@ void menuwin_paint_change_window_button() {
 
 void menuwin_paint_launcher() {
 
-	menuwin_paint_button(8,0,2,1,0.1,1.0,0.2);
+	menuwin_paint_button(10,0,2,1,0.1,1.0,0.2);
 	cairo_set_line_width(key_win.cr,0.12);
 	cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
 	cairo_arc(key_win.cr,0.0,0.0,0.8,0,M_PI42);
@@ -188,9 +188,9 @@ void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b)
 	// coordinates and size are in width/10 and height/10 units
 	// 0,0 is bottom-left
 	
-	x=(x*width)/10;
+	x=(x*width)/KEYS_PER_ROW;
 	y=key_win.height-(((y+1)*height)/10);
-	w=(w*width)/10;
+	w=(w*width)/KEYS_PER_ROW;
 	h=(h*height)/10;
 	float scale;
 	

@@ -39,6 +39,7 @@
 
 #define KEYS_PER_ROW 12
 
+void menuwin_init();
 void menuwin_set_window();
 void menuwin_expose(xcb_expose_event_t *ee);
 void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b);

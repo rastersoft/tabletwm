@@ -240,27 +240,7 @@ void action_mouse_click(xcb_generic_event_t *e) {
 	int x=(ee->event_x*KEYS_PER_ROW)/width;
 	int y=((key_win.height-ee->event_y)*10)/height;
 	
-	if (y==0) { // main buttons row
-		switch(x) {
-		case 0:
-			support_close_window();
-		break;
-		case 5:
-			if (key_win.has_keyboard&0x01) {
-				key_win.has_keyboard^=0x02;
-				menuwin_set_window();
-			}
-		break;
-		case 6:
-		case 7:
-			support_next_window(1);
-		break;
-		case 8:
-		case 9:
-			support_next_window(0);
-		break;
-		}
-	}
+	menuwin_press_key_at(x,y);
 
 }
 

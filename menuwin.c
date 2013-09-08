@@ -110,6 +110,7 @@ void menuwin_init() {
 				keyboard_lowercase[counter].type=KEY_BLANK;
 				keysym=0;
 			}
+			keyboard_lowercase[counter].keycode=counter;
 		}
 	}
 	cairo_select_font_face(key_win.cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
@@ -448,6 +449,49 @@ void menuwin_set_window() {
 	xcb_configure_window(conn,key_win.window,value_mask,v);
 	cairo_xcb_surface_set_size(key_win.surface,v[2],v[3]);
 	menuwin_expose(NULL);
+}
+
+void menuwin_press_key_at(int x, int y) {
+
+	if (y==0) { // main buttons row
+		switch(x) {
+		case 0:
+			support_close_window();
+		break;
+		case 5:
+			if (key_win.has_keyboard&0x01) {
+				key_win.has_keyboard^=0x02;
+				menuwin_set_window();
+			}
+		break;
+		case 6:
+		case 7:
+			support_next_window(1);
+		break;
+		case 8:
+		case 9:
+			support_next_window(0);
+		break;
+		}
+		return;
+	}
+
+	int lx,ly,i;
+	
+	i=0;
+	for(ly=4;ly>0;ly--) {
+		for(lx=0;lx<KEYS_PER_ROW;lx++) {
+			if (keyboard_lowercase[i].type!=KEY_BLANK) {
+				if ((x>=lx)&&(x<(lx+keyboard_lowercase[i].w))&&(y<=ly)&&(y>(ly-keyboard_lowercase[i].h))) {
+					printf("Pressed %d\n",keyboard_lowercase[i].keycode);
+					goto key_end;
+				}
+			}
+			i++;
+		}
+	}
+key_end:
+	return;
 }
 
 void menuwin_expose(xcb_expose_event_t *ee) {

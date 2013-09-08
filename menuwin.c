@@ -172,11 +172,27 @@ void menuwin_paint_launcher() {
 	cairo_restore(key_win.cr);
 }
 
+void menuwin_paint_keyboard() {
+
+	int x,y;
+	int counter=0;
+	for(y=4;y>0;y--) {
+		for(x=0;x<KEYS_PER_ROW;x++) {
+			if (keyboard_lowercase[counter].type!=KEY_BLANK) {
+				menuwin_paint_button(x,y,keyboard_lowercase[counter].w,keyboard_lowercase[counter].h,0.9,0.9,0.9);
+				cairo_restore(key_win.cr);
+			}
+			counter++;
+		}
+	}
+}
+
 void menuwin_paint_buttons() {
 
 	menuwin_paint_close_button();
 	if (key_win.has_keyboard&0x01) {
 		menuwin_paint_swap_button();
+		menuwin_paint_keyboard();
 	}
 	menuwin_paint_change_app_button();
 	menuwin_paint_change_window_button();

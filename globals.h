@@ -24,10 +24,13 @@
 #include <xcb/xcb_atom.h>
 #include <cairo/cairo.h>
 #include <cairo/cairo-xcb.h>
+#include <X11/keysym.h>
 
 #define TWM_NAME "tabletwm"
 
 #define DEBUG
+
+#define KEYBOARD_FILE "keyboard_layout.sys"
 
 enum TWM_ATOM_DEFS {
 	TWM_ATOM_WM_SIZE_HINTS=0,
@@ -116,6 +119,19 @@ struct key_win_s {
 	cairo_surface_t *surface;
 	cairo_t *cr;
 };
+
+enum key_type {KEY_BLANK, KEY_PH, KEY_TAB, KEY_SPACE, KEY_RETURN, KEY_DELETE, KEY_SHIFT, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SYMBOL};
+
+struct key_element {
+	enum key_type type;
+	uint8_t keycode;
+	uint32_t keymods;
+	char w;
+	char h;
+	char g_element[8]; // to allow UTF-8 elements
+};
+
+extern struct key_element keyboard_lowercase[];
 
 extern struct key_win_s key_win;
 extern char keep_running;

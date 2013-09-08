@@ -183,4 +183,141 @@ void init_tabletwm() {
 		key_win.height=1;
 		key_win.enabled_by_mouse=0;
 	}
+	
+	// Read the keyboard definition files
+	FILE *keyboard_file=fopen(KEYBOARD_FILE,"r");
+	if (keyboard_file==NULL) {
+		printf("Can't open keyboard definition file\n");
+	} else {
+		int counter;
+		uint32_t keysym;
+		for(counter=0;!feof(keyboard_file);counter++) {
+			char command[15];
+			int w,h,retval;
+			retval=fscanf(keyboard_file,"%s %d %d",command,&w,&h);
+			if(retval!=3) {
+				break;
+			}
+			keyboard_lowercase[counter].g_element[0]=0;
+			keyboard_lowercase[counter].w=w;
+			keyboard_lowercase[counter].h=h;
+			if (!strcmp(command,"BLANK")) {
+				keyboard_lowercase[counter].type=KEY_BLANK;
+				keysym=0;
+			} else if (!strcmp(command,"KEY")) {
+				keyboard_lowercase[counter].type=KEY_PH;
+				retval=fscanf(keyboard_file,"%s",keyboard_lowercase[counter].g_element);
+				keysym=init_utf8_to_keysym(keyboard_lowercase[counter].g_element);
+				if (keysym==0) {
+					keyboard_lowercase[counter].type=KEY_BLANK;
+				}
+			} else if (!strcmp(command,"TAB")) {
+				keyboard_lowercase[counter].type=KEY_TAB;
+				keysym=XK_Tab;
+			} else if (!strcmp(command,"SPACE")) {
+				keyboard_lowercase[counter].type=KEY_SPACE;
+				keysym=XK_space;
+			} else if (!strcmp(command,"RETURN")) {
+				keyboard_lowercase[counter].type=KEY_RETURN;
+				keysym=XK_Return;
+			} else if (!strcmp(command,"DELETE")) {
+				keyboard_lowercase[counter].type=KEY_DELETE;
+				keysym=XK_BackSpace;
+			} else if (!strcmp(command,"SHIFT")) {
+				keyboard_lowercase[counter].type=KEY_SHIFT;
+				keysym=0;
+			} else if (!strcmp(command,"UP")) {
+				keyboard_lowercase[counter].type=KEY_UP;
+				keysym=XK_Up;
+			} else if (!strcmp(command,"DOWN")) {
+				keyboard_lowercase[counter].type=KEY_DOWN;
+				keysym=XK_Down;
+			} else if (!strcmp(command,"LEFT")) {
+				keyboard_lowercase[counter].type=KEY_LEFT;
+				keysym=XK_Left;
+			} else if (!strcmp(command,"RIGHT")) {
+				keyboard_lowercase[counter].type=KEY_RIGHT;
+				keysym=XK_Right;
+			} else if (!strcmp(command,"SYMBOL")) {
+				keyboard_lowercase[counter].type=KEY_SYMBOL;
+				keysym=0;
+			} else {
+				printf("Unknown command %s\n",command);
+				keyboard_lowercase[counter].type=KEY_BLANK;
+				keysym=0;
+			}
+		}
+	}
 }
+
+uint32_t init_utf8_to_keysym(unsigned char *data) {
+
+	uint32_t keysym=(uint32_t)(*data++);
+	uint32_t tmp;
+	if (keysym==0) {
+		return 0;
+	}
+	if (keysym<128) {
+		return (keysym);
+	}
+	if (keysym<192) { // error, not a valid UTF-8 code
+		return 0;
+	}
+	if (keysym<224) { // two-byte element
+		keysym&=0x0000001F;
+		keysym<<=6;
+		tmp=(uint32_t)(*data++);
+		keysym|=tmp&0x3F;
+		return (keysym);
+	}
+	if (keysym<240) { // three-byte element
+		keysym&=0x0000000F;
+		keysym<<=12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	if (keysym<248) { // four-byte element
+		keysym&=0x00000007;
+		keysym<<=18;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	if (keysym<252) { // five-byte element
+		keysym&=0x00000003;
+		keysym<<=24;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<18;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	if (keysym<254) { // six-byte element
+		keysym&=0x00000001;
+		keysym<<=30;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<24;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<18;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	return 0;
+}
+

@@ -42,6 +42,7 @@ void fill_keycodes() {
 	int counter;
 	int i,j,k;
 	char mods[256];
+	char keysym_asc[256];
 	
 	context=xkb_context_new(0);
 	keymap=xkb_keymap_new_from_names(context,&rules,0);
@@ -81,12 +82,28 @@ void fill_keycodes() {
 			if (!strcmp(command,"BLANK")) {
 				keyboard_lowercase[counter].type=KEY_BLANK;
 				keyboard_lowercase[counter].keysym=0;
+#if 0
 			} else if (!strcmp(command,"KEY")) {
 				keyboard_lowercase[counter].type=KEY_PH;
 				retval=fscanf(keyboard_file,"%s",keyboard_lowercase[counter].g_element);
 				keyboard_lowercase[counter].keysym=init_utf8_to_keysym(keyboard_lowercase[counter].g_element);
 				if (keyboard_lowercase[counter].keysym==0) {
 					keyboard_lowercase[counter].type=KEY_BLANK;
+				}
+#endif
+			} else if (!strcmp(command,"KEYSYM")) {
+				keyboard_lowercase[counter].type=KEY_PH;
+				retval=fscanf(keyboard_file,"%s",keysym_asc);
+				printf("Retval: %d %s\n",retval,keysym_asc);
+				keyboard_lowercase[counter].keysym=xkb_keysym_from_name(keysym_asc,0);
+				if (keyboard_lowercase[counter].keysym==0) {
+					keyboard_lowercase[counter].type=KEY_BLANK;
+				} else {
+					retval=xkb_keysym_to_utf8(keyboard_lowercase[counter].keysym,keyboard_lowercase[counter].g_element,7);
+					if (retval==-1) {
+						retval++;
+					}
+					keyboard_lowercase[counter].g_element[retval]=0;// terminate string
 				}
 			} else if (!strcmp(command,"TAB")) {
 				keyboard_lowercase[counter].type=KEY_TAB;

@@ -41,7 +41,7 @@ int main() {
 
 	uint8_t xrandr;
 
-	printf("TabletWM version 0.2\n");
+	printf("TabletWM version 0.3\n");
 
 	init_tabletwm();
 

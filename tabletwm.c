@@ -129,7 +129,6 @@ int main() {
 		}
 		free(e);
 	}
-	free(e);
 	wincache_destroy_element(key_win.window);
 	xcb_disconnect(conn);
 	return(0);

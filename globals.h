@@ -32,6 +32,8 @@
 
 #define KEYBOARD_FILE "keyboard_layout.sys"
 
+#define KEYBOARD_MAX_KEYS 48
+
 enum TWM_ATOM_DEFS {
 	TWM_ATOM_WM_SIZE_HINTS=0,
 	TWM_ATOM_WM_NORMAL_HINTS,
@@ -124,8 +126,9 @@ enum key_type {KEY_BLANK, KEY_PH, KEY_TAB, KEY_SPACE, KEY_RETURN, KEY_DELETE, KE
 
 struct key_element {
 	enum key_type type;
-	uint8_t keycode;
-	uint32_t keymods;
+	xcb_keycode_t keycode;
+	xcb_keycode_t modifier;
+	xcb_keysym_t  keysym;
 	char w;
 	char h;
 	char g_element[8]; // to allow UTF-8 elements

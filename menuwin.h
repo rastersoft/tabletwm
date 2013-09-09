@@ -29,8 +29,11 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
+#include <xcb/xcb_keysyms.h>
+#include <xcb/xtest.h>
 #include <cairo/cairo.h>
 #include <cairo/cairo-xcb.h>
+#include <xkbcommon/xkbcommon.h>
 
 #define BUTTON_RADIUS 5
 #define BUTTON_MARGIN 1

@@ -3,7 +3,7 @@ LN=gcc
 CFLAGS= -g -O0
 
 tabletwm: tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o
-	$(LN) -o tabletwm tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm cairo`
+	$(LN) -o tabletwm tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm xcb-keysyms xcb-xtest cairo xkbcommon`
 
 tabletwm.o: tabletwm.c globals.h init.h actions.h
 	$(CC) $(CFLAGS) -o tabletwm.o tabletwm.c `pkg-config --cflags xcb xcb-util xcb-randr cairo`
@@ -24,7 +24,7 @@ wincache.o: wincache.c wincache.h globals.h
 	$(CC) $(CFLAGS) -o wincache.o wincache.c `pkg-config --cflags xcb cairo`
 
 menuwin.o: menuwin.c menuwin.h globals.h
-	$(CC) $(CFLAGS) -o menuwin.o menuwin.c `pkg-config --cflags xcb cairo`
+	$(CC) $(CFLAGS) -o menuwin.o menuwin.c `pkg-config --cflags xcb xcb-keysyms xcb-xtest cairo xkbcommon`
 
 clean:
 	rm -f *.o tabletwm

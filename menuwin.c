@@ -25,6 +25,145 @@
 #include "globals.h"
 #include "wincache.h"
 
+void fill_keycodes() {
+
+
+	struct xkb_keymap *keymap;
+	struct xkb_context *context;
+	const struct xkb_rule_names rules={
+		.rules=NULL,
+		.model=NULL,
+		.layout=NULL,
+		.variant=NULL,
+		.options=NULL
+	};
+	struct xkb_state *state;
+	enum xkb_state_component current_state;
+	int counter;
+	int i,j,k;
+	char mods[256];
+	
+	context=xkb_context_new(0);
+	keymap=xkb_keymap_new_from_names(context,&rules,0);
+
+	state=NULL;
+
+	// Get all the modifier keys
+	for(i=8;i<256;i++) {
+		state=xkb_state_new(keymap);
+		current_state=xkb_state_update_key(state, i,XKB_KEY_DOWN);
+		if (current_state!=0) {
+			mods[i]=1;
+		} else {
+			mods[i]=0;
+		}
+		xkb_state_unref(state);
+	}
+	mods[7]=1; // fake mod, used for "no mod"
+
+	// Read the keyboard definition files
+	FILE *keyboard_file=fopen(KEYBOARD_FILE,"r");
+	if (keyboard_file==NULL) {
+		printf("Can't open keyboard definition file\n");
+	} else {
+		for(counter=0;(!feof(keyboard_file))&&(counter<KEYBOARD_MAX_KEYS);counter++) {
+			char command[15];
+			int w,h,retval;
+			retval=fscanf(keyboard_file,"%s %d %d",command,&w,&h);
+			if(retval!=3) {
+				break;
+			}
+			keyboard_lowercase[counter].g_element[0]=0;
+			keyboard_lowercase[counter].w=w;
+			keyboard_lowercase[counter].h=h;
+			keyboard_lowercase[counter].keycode=0;
+			keyboard_lowercase[counter].modifier=0;
+			if (!strcmp(command,"BLANK")) {
+				keyboard_lowercase[counter].type=KEY_BLANK;
+				keyboard_lowercase[counter].keysym=0;
+			} else if (!strcmp(command,"KEY")) {
+				keyboard_lowercase[counter].type=KEY_PH;
+				retval=fscanf(keyboard_file,"%s",keyboard_lowercase[counter].g_element);
+				keyboard_lowercase[counter].keysym=init_utf8_to_keysym(keyboard_lowercase[counter].g_element);
+				if (keyboard_lowercase[counter].keysym==0) {
+					keyboard_lowercase[counter].type=KEY_BLANK;
+				}
+			} else if (!strcmp(command,"TAB")) {
+				keyboard_lowercase[counter].type=KEY_TAB;
+				keyboard_lowercase[counter].keysym=XK_Tab;
+			} else if (!strcmp(command,"SPACE")) {
+				keyboard_lowercase[counter].type=KEY_SPACE;
+				keyboard_lowercase[counter].keysym=XK_space;
+			} else if (!strcmp(command,"RETURN")) {
+				keyboard_lowercase[counter].type=KEY_RETURN;
+				keyboard_lowercase[counter].keysym=XK_Return;
+			} else if (!strcmp(command,"DELETE")) {
+				keyboard_lowercase[counter].type=KEY_DELETE;
+				keyboard_lowercase[counter].keysym=XK_BackSpace;
+			} else if (!strcmp(command,"SHIFT")) {
+				keyboard_lowercase[counter].type=KEY_SHIFT;
+				keyboard_lowercase[counter].keysym=0;
+			} else if (!strcmp(command,"UP")) {
+				keyboard_lowercase[counter].type=KEY_UP;
+				keyboard_lowercase[counter].keysym=XK_Up;
+			} else if (!strcmp(command,"DOWN")) {
+				keyboard_lowercase[counter].type=KEY_DOWN;
+				keyboard_lowercase[counter].keysym=XK_Down;
+			} else if (!strcmp(command,"LEFT")) {
+				keyboard_lowercase[counter].type=KEY_LEFT;
+				keyboard_lowercase[counter].keysym=XK_Left;
+			} else if (!strcmp(command,"RIGHT")) {
+				keyboard_lowercase[counter].type=KEY_RIGHT;
+				keyboard_lowercase[counter].keysym=XK_Right;
+			} else if (!strcmp(command,"SYMBOL")) {
+				keyboard_lowercase[counter].type=KEY_SYMBOL;
+				keyboard_lowercase[counter].keysym=0;
+			} else {
+				printf("Unknown command %s\n",command);
+				keyboard_lowercase[counter].type=KEY_BLANK;
+				keyboard_lowercase[counter].keysym=0;
+			}
+		}
+
+		printf("Entro 1\n");
+		xkb_keysym_t  keysym;
+		xkb_keycode_t keycode_mod;
+		for(i=7;i<256;i++) { // do a loop on every modifier
+			if (!mods[i]) {
+				continue; // In this loop we test each modifier with each keycode
+			}
+			state=xkb_state_new(keymap);
+			if (i!=7) {
+				xkb_state_update_key(state, i,XKB_KEY_DOWN); // press the modifier key
+				keycode_mod=i;
+			} else {
+				keycode_mod=0;
+			}
+			for(j=8;j<256;j++) {
+				if (mods[j]) {
+					continue;  // Don't test modifiers; we want "normal" keys
+				}
+				keysym=xkb_state_key_get_one_sym(state, j);
+				if (keysym==XKB_KEY_NoSymbol) {
+					continue;
+				}
+				for(k=0;k<counter;k++) { // and now we check each desired key with the keysymbol obtained
+					if ((keyboard_lowercase[k].type!=KEY_BLANK)&&(keyboard_lowercase[k].keysym==keysym)) {
+						keyboard_lowercase[k].keycode=j;
+						keyboard_lowercase[k].modifier=keycode_mod;
+					}
+				}
+			}
+		}
+		printf("Entro 2\n");
+	}
+	
+	xkb_keymap_unref(keymap);
+	xkb_context_unref(context);
+
+
+}
+
 void menuwin_init() {
 
 	key_win.surface=cairo_xcb_surface_create(conn,key_win.window,visual_type,width,10);
@@ -48,71 +187,8 @@ void menuwin_init() {
 	key_win.height=1;
 	key_win.enabled_by_mouse=0;
 
-	// Read the keyboard definition files
-	FILE *keyboard_file=fopen(KEYBOARD_FILE,"r");
-	if (keyboard_file==NULL) {
-		printf("Can't open keyboard definition file\n");
-	} else {
-		int counter;
-		uint32_t keysym;
-		for(counter=0;!feof(keyboard_file);counter++) {
-			char command[15];
-			int w,h,retval;
-			retval=fscanf(keyboard_file,"%s %d %d",command,&w,&h);
-			if(retval!=3) {
-				break;
-			}
-			keyboard_lowercase[counter].g_element[0]=0;
-			keyboard_lowercase[counter].w=w;
-			keyboard_lowercase[counter].h=h;
-			if (!strcmp(command,"BLANK")) {
-				keyboard_lowercase[counter].type=KEY_BLANK;
-				keysym=0;
-			} else if (!strcmp(command,"KEY")) {
-				keyboard_lowercase[counter].type=KEY_PH;
-				retval=fscanf(keyboard_file,"%s",keyboard_lowercase[counter].g_element);
-				keysym=init_utf8_to_keysym(keyboard_lowercase[counter].g_element);
-				if (keysym==0) {
-					keyboard_lowercase[counter].type=KEY_BLANK;
-				}
-			} else if (!strcmp(command,"TAB")) {
-				keyboard_lowercase[counter].type=KEY_TAB;
-				keysym=XK_Tab;
-			} else if (!strcmp(command,"SPACE")) {
-				keyboard_lowercase[counter].type=KEY_SPACE;
-				keysym=XK_space;
-			} else if (!strcmp(command,"RETURN")) {
-				keyboard_lowercase[counter].type=KEY_RETURN;
-				keysym=XK_Return;
-			} else if (!strcmp(command,"DELETE")) {
-				keyboard_lowercase[counter].type=KEY_DELETE;
-				keysym=XK_BackSpace;
-			} else if (!strcmp(command,"SHIFT")) {
-				keyboard_lowercase[counter].type=KEY_SHIFT;
-				keysym=0;
-			} else if (!strcmp(command,"UP")) {
-				keyboard_lowercase[counter].type=KEY_UP;
-				keysym=XK_Up;
-			} else if (!strcmp(command,"DOWN")) {
-				keyboard_lowercase[counter].type=KEY_DOWN;
-				keysym=XK_Down;
-			} else if (!strcmp(command,"LEFT")) {
-				keyboard_lowercase[counter].type=KEY_LEFT;
-				keysym=XK_Left;
-			} else if (!strcmp(command,"RIGHT")) {
-				keyboard_lowercase[counter].type=KEY_RIGHT;
-				keysym=XK_Right;
-			} else if (!strcmp(command,"SYMBOL")) {
-				keyboard_lowercase[counter].type=KEY_SYMBOL;
-				keysym=0;
-			} else {
-				printf("Unknown command %s\n",command);
-				keyboard_lowercase[counter].type=KEY_BLANK;
-				keysym=0;
-			}
-			keyboard_lowercase[counter].keycode=counter;
-		}
-	}
+	fill_keycodes();
+
 	cairo_select_font_face(key_win.cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(key_win.cr,1.2);
 }
@@ -483,7 +559,22 @@ void menuwin_press_key_at(int x, int y) {
 		for(lx=0;lx<KEYS_PER_ROW;lx++) {
 			if (keyboard_lowercase[i].type!=KEY_BLANK) {
 				if ((x>=lx)&&(x<(lx+keyboard_lowercase[i].w))&&(y<=ly)&&(y>(ly-keyboard_lowercase[i].h))) {
-					printf("Pressed %d\n",keyboard_lowercase[i].keycode);
+					xcb_keycode_t keycode=keyboard_lowercase[i].keycode;
+					xcb_keycode_t keymod =keyboard_lowercase[i].modifier;
+					if (keycode!=0) {
+						if (keymod!=0) {
+							xcb_test_fake_input(conn,XCB_KEY_PRESS,keymod,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+							xcb_flush(conn);
+						}
+						xcb_test_fake_input(conn,XCB_KEY_PRESS,keycode,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+						xcb_flush(conn);
+						xcb_test_fake_input(conn,XCB_KEY_RELEASE,keycode,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+						xcb_flush(conn);
+						if (keymod!=0) {
+							xcb_test_fake_input(conn,XCB_KEY_RELEASE,keymod,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+							xcb_flush(conn);
+						}
+					}
 					goto key_end;
 				}
 			}

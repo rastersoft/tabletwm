@@ -34,4 +34,6 @@ xcb_visualtype_t *visual_type;
 
 struct key_win_s key_win;
 
-struct key_element keyboard_lowercase[KEYBOARD_MAX_KEYS];
+struct key_element *keyboard_lowercase;
+int keyboard_blocks;
+int keyboard_current_block;

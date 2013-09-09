@@ -24,6 +24,5 @@
 #include <xcb/xcb_atom.h>
 
 void init_tabletwm();
-uint32_t init_utf8_to_keysym(unsigned char *data);
 
 #endif //_H_INIT_

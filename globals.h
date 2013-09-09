@@ -32,8 +32,6 @@
 
 #define KEYBOARD_FILE "keyboard_layout.sys"
 
-#define KEYBOARD_MAX_KEYS 48
-
 enum TWM_ATOM_DEFS {
 	TWM_ATOM_WM_SIZE_HINTS=0,
 	TWM_ATOM_WM_NORMAL_HINTS,
@@ -122,7 +120,7 @@ struct key_win_s {
 	cairo_t *cr;
 };
 
-enum key_type {KEY_BLANK, KEY_PH, KEY_TAB, KEY_SPACE, KEY_RETURN, KEY_DELETE, KEY_SHIFT, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SYMBOL};
+enum key_type {KEY_BLANK, KEY_PH, KEY_TAB, KEY_SPACE, KEY_RETURN, KEY_DELETE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_JUMPTO};
 
 struct key_element {
 	enum key_type type;
@@ -132,9 +130,13 @@ struct key_element {
 	char w;
 	char h;
 	char g_element[8]; // to allow UTF-8 elements
+	float size;
 };
 
-extern struct key_element keyboard_lowercase[];
+extern int keyboard_blocks;
+extern int keyboard_current_block;
+
+extern struct key_element *keyboard_lowercase;
 
 extern struct key_win_s key_win;
 extern char keep_running;

@@ -43,6 +43,10 @@ void fill_keycodes() {
 	int i,j,k;
 	char mods[256];
 	char keysym_asc[256];
+	char command[15];
+	uint32_t max_keys;
+	int w,h,retval;
+	int jumpto;
 	
 	context=xkb_context_new(0);
 	keymap=xkb_keymap_new_from_names(context,&rules,0);
@@ -67,119 +71,209 @@ void fill_keycodes() {
 	if (keyboard_file==NULL) {
 		printf("Can't open keyboard definition file\n");
 	} else {
-		for(counter=0;(!feof(keyboard_file))&&(counter<KEYBOARD_MAX_KEYS);counter++) {
-			char command[15];
-			int w,h,retval;
-			retval=fscanf(keyboard_file,"%s %d %d",command,&w,&h);
-			if(retval!=3) {
-				break;
-			}
-			keyboard_lowercase[counter].g_element[0]=0;
-			keyboard_lowercase[counter].w=w;
-			keyboard_lowercase[counter].h=h;
-			keyboard_lowercase[counter].keycode=0;
-			keyboard_lowercase[counter].modifier=0;
-			if (!strcmp(command,"BLANK")) {
-				keyboard_lowercase[counter].type=KEY_BLANK;
-				keyboard_lowercase[counter].keysym=0;
-#if 0
-			} else if (!strcmp(command,"KEY")) {
-				keyboard_lowercase[counter].type=KEY_PH;
-				retval=fscanf(keyboard_file,"%s",keyboard_lowercase[counter].g_element);
-				keyboard_lowercase[counter].keysym=init_utf8_to_keysym(keyboard_lowercase[counter].g_element);
-				if (keyboard_lowercase[counter].keysym==0) {
-					keyboard_lowercase[counter].type=KEY_BLANK;
+		retval=fscanf(keyboard_file,"%s %d",command,&keyboard_blocks);
+		if (retval!=2) {
+			printf("Can't read the number of blocks\n");
+		} else {
+			max_keys=keyboard_blocks*4*KEYS_PER_ROW;
+			keyboard_lowercase=(struct key_element *)malloc(max_keys*sizeof(struct key_element));
+			for(counter=0;(!feof(keyboard_file))&&(counter<max_keys);counter++) {
+				retval=fscanf(keyboard_file,"%s %d %d",command,&w,&h);
+				if(retval!=3) {
+					break;
 				}
-#endif
-			} else if (!strcmp(command,"KEYSYM")) {
-				keyboard_lowercase[counter].type=KEY_PH;
-				retval=fscanf(keyboard_file,"%s",keysym_asc);
-				printf("Retval: %d %s\n",retval,keysym_asc);
-				keyboard_lowercase[counter].keysym=xkb_keysym_from_name(keysym_asc,0);
-				if (keyboard_lowercase[counter].keysym==0) {
+				keyboard_lowercase[counter].size=KEYS_FONT_SIZE;
+				keyboard_lowercase[counter].g_element[0]=0;
+				keyboard_lowercase[counter].w=w;
+				keyboard_lowercase[counter].h=h;
+				keyboard_lowercase[counter].keycode=0;
+				keyboard_lowercase[counter].modifier=0;
+				if (!strcmp(command,"BLANK")) {
 					keyboard_lowercase[counter].type=KEY_BLANK;
+					keyboard_lowercase[counter].keysym=0;
+				} else if (!strcmp(command,"KEY")) {
+					keyboard_lowercase[counter].type=KEY_PH;
+					retval=fscanf(keyboard_file,"%s",keyboard_lowercase[counter].g_element);
+					keyboard_lowercase[counter].keysym=init_utf8_to_keysym(keyboard_lowercase[counter].g_element);
+					if (keyboard_lowercase[counter].keysym==0) {
+						keyboard_lowercase[counter].type=KEY_BLANK;
+					}
+				} else if ((!strcmp(command,"KEYSYM"))||(!strcmp(command,"KEYSYMTEXT"))) {
+					keyboard_lowercase[counter].type=KEY_PH;
+					retval=fscanf(keyboard_file,"%s",keysym_asc);
+					keyboard_lowercase[counter].keysym=xkb_keysym_from_name(keysym_asc,0);
+					if (keyboard_lowercase[counter].keysym==0) {
+						printf("Unknown keysym %s\n",keysym_asc);
+						keyboard_lowercase[counter].type=KEY_BLANK;
+					} else {
+						if (!strcmp(command,"KEYSYMTEXT")) {
+							retval=fscanf(keyboard_file,"%s",keyboard_lowercase[counter].g_element);
+							keyboard_lowercase[counter].size=KEYS_TEXT_FONT_SIZE;
+						} else {
+							retval=xkb_keysym_to_utf8(keyboard_lowercase[counter].keysym,keyboard_lowercase[counter].g_element,7);
+							if (retval==-1) {
+								retval++;
+							}
+							keyboard_lowercase[counter].g_element[retval]=0;// terminate string
+						}
+					}
+				} else if (!strcmp(command,"TAB")) {
+					keyboard_lowercase[counter].type=KEY_TAB;
+					keyboard_lowercase[counter].keysym=XK_Tab;
+				} else if (!strcmp(command,"SPACE")) {
+					keyboard_lowercase[counter].type=KEY_SPACE;
+					keyboard_lowercase[counter].keysym=XK_space;
+				} else if (!strcmp(command,"RETURN")) {
+					keyboard_lowercase[counter].type=KEY_RETURN;
+					keyboard_lowercase[counter].keysym=XK_Return;
+				} else if (!strcmp(command,"DELETE")) {
+					keyboard_lowercase[counter].type=KEY_DELETE;
+					keyboard_lowercase[counter].keysym=XK_BackSpace;
+				} else if (!strcmp(command,"JUMPTO")) {
+					retval=fscanf(keyboard_file,"%d %s",&jumpto,command);
+					keyboard_lowercase[counter].type=KEY_JUMPTO;
+					keyboard_lowercase[counter].keycode=jumpto;
+					keyboard_lowercase[counter].keysym=0;
+					if (!strcmp(command,"GEN")) {
+						keyboard_lowercase[counter].modifier=0;
+					} else if (!strcmp(command,"SHIFT")) {
+						keyboard_lowercase[counter].modifier=1;
+					} else if (!strcmp(command,"SYMBOLS")) {
+						keyboard_lowercase[counter].modifier=2;
+					} else if (!strcmp(command,"LETTERS")) {
+						keyboard_lowercase[counter].modifier=3;
+					}
+					if (jumpto>=keyboard_blocks) {
+						printf("Ilegal jump to block %d (max. is %d)\n",jumpto,keyboard_blocks);
+						keyboard_lowercase[counter].type=KEY_BLANK;
+					}
+				} else if (!strcmp(command,"UP")) {
+					keyboard_lowercase[counter].type=KEY_UP;
+					keyboard_lowercase[counter].keysym=XK_Up;
+				} else if (!strcmp(command,"DOWN")) {
+					keyboard_lowercase[counter].type=KEY_DOWN;
+					keyboard_lowercase[counter].keysym=XK_Down;
+				} else if (!strcmp(command,"LEFT")) {
+					keyboard_lowercase[counter].type=KEY_LEFT;
+					keyboard_lowercase[counter].keysym=XK_Left;
+				} else if (!strcmp(command,"RIGHT")) {
+					keyboard_lowercase[counter].type=KEY_RIGHT;
+					keyboard_lowercase[counter].keysym=XK_Right;
 				} else {
-					retval=xkb_keysym_to_utf8(keyboard_lowercase[counter].keysym,keyboard_lowercase[counter].g_element,7);
-					if (retval==-1) {
-						retval++;
-					}
-					keyboard_lowercase[counter].g_element[retval]=0;// terminate string
+					printf("Unknown command %s\n",command);
+					keyboard_lowercase[counter].type=KEY_BLANK;
+					keyboard_lowercase[counter].keysym=0;
 				}
-			} else if (!strcmp(command,"TAB")) {
-				keyboard_lowercase[counter].type=KEY_TAB;
-				keyboard_lowercase[counter].keysym=XK_Tab;
-			} else if (!strcmp(command,"SPACE")) {
-				keyboard_lowercase[counter].type=KEY_SPACE;
-				keyboard_lowercase[counter].keysym=XK_space;
-			} else if (!strcmp(command,"RETURN")) {
-				keyboard_lowercase[counter].type=KEY_RETURN;
-				keyboard_lowercase[counter].keysym=XK_Return;
-			} else if (!strcmp(command,"DELETE")) {
-				keyboard_lowercase[counter].type=KEY_DELETE;
-				keyboard_lowercase[counter].keysym=XK_BackSpace;
-			} else if (!strcmp(command,"SHIFT")) {
-				keyboard_lowercase[counter].type=KEY_SHIFT;
-				keyboard_lowercase[counter].keysym=0;
-			} else if (!strcmp(command,"UP")) {
-				keyboard_lowercase[counter].type=KEY_UP;
-				keyboard_lowercase[counter].keysym=XK_Up;
-			} else if (!strcmp(command,"DOWN")) {
-				keyboard_lowercase[counter].type=KEY_DOWN;
-				keyboard_lowercase[counter].keysym=XK_Down;
-			} else if (!strcmp(command,"LEFT")) {
-				keyboard_lowercase[counter].type=KEY_LEFT;
-				keyboard_lowercase[counter].keysym=XK_Left;
-			} else if (!strcmp(command,"RIGHT")) {
-				keyboard_lowercase[counter].type=KEY_RIGHT;
-				keyboard_lowercase[counter].keysym=XK_Right;
-			} else if (!strcmp(command,"SYMBOL")) {
-				keyboard_lowercase[counter].type=KEY_SYMBOL;
-				keyboard_lowercase[counter].keysym=0;
-			} else {
-				printf("Unknown command %s\n",command);
-				keyboard_lowercase[counter].type=KEY_BLANK;
-				keyboard_lowercase[counter].keysym=0;
 			}
-		}
 
-		printf("Entro 1\n");
-		xkb_keysym_t  keysym;
-		xkb_keycode_t keycode_mod;
-		for(i=7;i<256;i++) { // do a loop on every modifier
-			if (!mods[i]) {
-				continue; // In this loop we test each modifier with each keycode
-			}
-			state=xkb_state_new(keymap);
-			if (i!=7) {
-				xkb_state_update_key(state, i,XKB_KEY_DOWN); // press the modifier key
-				keycode_mod=i;
-			} else {
-				keycode_mod=0;
-			}
-			for(j=8;j<256;j++) {
-				if (mods[j]) {
-					continue;  // Don't test modifiers; we want "normal" keys
+			xkb_keysym_t  keysym;
+			xkb_keycode_t keycode_mod;
+			for(i=7;i<256;i++) { // do a loop on every modifier
+				if (!mods[i]) {
+					continue; // In this loop we test each modifier with each keycode
 				}
-				keysym=xkb_state_key_get_one_sym(state, j);
-				if (keysym==XKB_KEY_NoSymbol) {
-					continue;
+				state=xkb_state_new(keymap);
+				if (i!=7) {
+					xkb_state_update_key(state, i,XKB_KEY_DOWN); // press the modifier key
+					keycode_mod=i;
+				} else {
+					keycode_mod=0;
 				}
-				for(k=0;k<counter;k++) { // and now we check each desired key with the keysymbol obtained
-					if ((keyboard_lowercase[k].type!=KEY_BLANK)&&(keyboard_lowercase[k].keysym==keysym)) {
-						keyboard_lowercase[k].keycode=j;
-						keyboard_lowercase[k].modifier=keycode_mod;
+				for(j=8;j<256;j++) {
+					if (mods[j]) {
+						continue;  // Don't test modifiers; we want "normal" keys
+					}
+					keysym=xkb_state_key_get_one_sym(state, j);
+					if (keysym==XKB_KEY_NoSymbol) {
+						continue;
+					}
+					for(k=0;k<counter;k++) { // and now we check each desired key with the keysymbol obtained
+						if ((keyboard_lowercase[k].type!=KEY_BLANK)&&(keyboard_lowercase[k].keysym==keysym)) {
+							keyboard_lowercase[k].keycode=j;
+							keyboard_lowercase[k].modifier=keycode_mod;
+						}
 					}
 				}
 			}
 		}
-		printf("Entro 2\n");
 	}
 	
+	keyboard_current_block=0;
 	xkb_keymap_unref(keymap);
 	xkb_context_unref(context);
-
-
 }
+
+uint32_t init_utf8_to_keysym(unsigned char *data) {
+
+	uint32_t keysym=(uint32_t)(*data++);
+	uint32_t tmp;
+	if (keysym==0) {
+		return 0;
+	}
+	if (keysym<128) {
+		return (keysym);
+	}
+	if (keysym<192) { // error, not a valid UTF-8 code
+		return 0;
+	}
+	if (keysym<224) { // two-byte element
+		keysym&=0x0000001F;
+		keysym<<=6;
+		tmp=(uint32_t)(*data++);
+		keysym|=tmp&0x3F;
+		return (keysym);
+	}
+	if (keysym<240) { // three-byte element
+		keysym&=0x0000000F;
+		keysym<<=12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	if (keysym<248) { // four-byte element
+		keysym&=0x00000007;
+		keysym<<=18;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	if (keysym<252) { // five-byte element
+		keysym&=0x00000003;
+		keysym<<=24;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<18;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	if (keysym<254) { // six-byte element
+		keysym&=0x00000001;
+		keysym<<=30;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<24;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<18;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<12;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F)<<6;
+		tmp=(uint32_t)(*data++);
+		keysym|=(tmp&0x3F);
+		return (keysym);
+	}
+	return 0;
+}
+
 
 void menuwin_init() {
 
@@ -361,7 +455,7 @@ void menuwin_paint_launcher() {
 void menuwin_paint_keyboard() {
 
 	int x,y;
-	int counter=0;
+	int counter=4*KEYS_PER_ROW*keyboard_current_block;
 	cairo_text_extents_t te;
 	for(y=4;y>0;y--) {
 		for(x=0;x<KEYS_PER_ROW;x++) {
@@ -411,14 +505,34 @@ void menuwin_paint_keyboard() {
 					cairo_line_to(key_win.cr,-0.4,0.4);
 					cairo_stroke(key_win.cr);
 				break;
-				case KEY_SHIFT:
-					cairo_move_to(key_win.cr,0.0,-0.6);
-					cairo_line_to(key_win.cr,0.0,0.6);
-					cairo_stroke(key_win.cr);
-					cairo_move_to(key_win.cr,-0.4,-0.2);
-					cairo_line_to(key_win.cr,0.0,-0.6);
-					cairo_line_to(key_win.cr,0.4,-0.2);
-					cairo_stroke(key_win.cr);
+				case KEY_JUMPTO:
+					if (keyboard_lowercase[counter].modifier==1) { // Shift symbol
+						cairo_move_to(key_win.cr,0.0,-0.6);
+						cairo_line_to(key_win.cr,0.0,0.6);
+						cairo_stroke(key_win.cr);
+						cairo_move_to(key_win.cr,-0.4,-0.2);
+						cairo_line_to(key_win.cr,0.0,-0.6);
+						cairo_line_to(key_win.cr,0.4,-0.2);
+						cairo_stroke(key_win.cr);
+					} else if (keyboard_lowercase[counter].modifier==2) { // Jump to numbers/symbols
+						cairo_set_font_size(key_win.cr,KEYS_JUMP_FONT_SIZE);
+						cairo_text_extents(key_win.cr,"123", &te);
+						cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),0.35);
+						cairo_show_text(key_win.cr,"123");
+						cairo_set_font_size(key_win.cr,KEYS_FONT_SIZE);
+					} else if (keyboard_lowercase[counter].modifier==3) { // Jump to letters
+						cairo_set_font_size(key_win.cr,KEYS_JUMP_FONT_SIZE);
+						cairo_text_extents(key_win.cr,"abc", &te);
+						cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),0.35);
+						cairo_show_text(key_win.cr,"abc");
+						cairo_set_font_size(key_win.cr,KEYS_FONT_SIZE);
+					} else { // Generic symbol
+						cairo_set_font_size(key_win.cr,KEYS_JUMP_FONT_SIZE);
+						cairo_text_extents(key_win.cr,"...", &te);
+						cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),0.35);
+						cairo_show_text(key_win.cr,"...");
+						cairo_set_font_size(key_win.cr,KEYS_FONT_SIZE);
+					}
 				break;
 				case KEY_UP:
 					cairo_move_to(key_win.cr,-0.6,0.3);
@@ -449,9 +563,15 @@ void menuwin_paint_keyboard() {
 					cairo_fill(key_win.cr);
 				break;
 				case KEY_PH:
+					if (keyboard_lowercase[counter].size!=KEYS_FONT_SIZE) {
+						cairo_set_font_size(key_win.cr,keyboard_lowercase[counter].size);
+					}
 					cairo_text_extents(key_win.cr,keyboard_lowercase[counter].g_element, &te);
 					cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),0.35);
 					cairo_show_text(key_win.cr,keyboard_lowercase[counter].g_element);
+					if (keyboard_lowercase[counter].size!=KEYS_FONT_SIZE) {
+						cairo_set_font_size(key_win.cr,KEYS_FONT_SIZE);
+					}
 				break;
 
 				// KEY_SYMBOL
@@ -571,25 +691,30 @@ void menuwin_press_key_at(int x, int y) {
 
 	int lx,ly,i;
 	
-	i=0;
+	i=4*KEYS_PER_ROW*keyboard_current_block;
 	for(ly=4;ly>0;ly--) {
 		for(lx=0;lx<KEYS_PER_ROW;lx++) {
 			if (keyboard_lowercase[i].type!=KEY_BLANK) {
 				if ((x>=lx)&&(x<(lx+keyboard_lowercase[i].w))&&(y<=ly)&&(y>(ly-keyboard_lowercase[i].h))) {
-					xcb_keycode_t keycode=keyboard_lowercase[i].keycode;
-					xcb_keycode_t keymod =keyboard_lowercase[i].modifier;
-					if (keycode!=0) {
-						if (keymod!=0) {
-							xcb_test_fake_input(conn,XCB_KEY_PRESS,keymod,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+					if (keyboard_lowercase[i].type==KEY_JUMPTO) {
+						keyboard_current_block=keyboard_lowercase[i].keycode;
+						menuwin_expose(NULL);
+					} else {
+						xcb_keycode_t keycode=keyboard_lowercase[i].keycode;
+						xcb_keycode_t keymod =keyboard_lowercase[i].modifier;
+						if (keycode!=0) {
+							if (keymod!=0) {
+								xcb_test_fake_input(conn,XCB_KEY_PRESS,keymod,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+								xcb_flush(conn);
+							}
+							xcb_test_fake_input(conn,XCB_KEY_PRESS,keycode,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
 							xcb_flush(conn);
-						}
-						xcb_test_fake_input(conn,XCB_KEY_PRESS,keycode,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
-						xcb_flush(conn);
-						xcb_test_fake_input(conn,XCB_KEY_RELEASE,keycode,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
-						xcb_flush(conn);
-						if (keymod!=0) {
-							xcb_test_fake_input(conn,XCB_KEY_RELEASE,keymod,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+							xcb_test_fake_input(conn,XCB_KEY_RELEASE,keycode,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
 							xcb_flush(conn);
+							if (keymod!=0) {
+								xcb_test_fake_input(conn,XCB_KEY_RELEASE,keymod,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
+								xcb_flush(conn);
+							}
 						}
 					}
 					goto key_end;

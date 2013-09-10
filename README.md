@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.3
+Version 0.4
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
@@ -28,6 +28,23 @@ Pressing the MENU key (the one at the right, between WINDOWS and CTRL) will expa
 
 By pressing Ctrl+MENU, both the options bar and a virtual keyboard will be expanded. A new icon will be available in the options bar, that allows to move the keyboard to the top or bottom middle. This is useful when using the GSL1680 user-space driver, because it generates this keypress when touching with three fingers.
 
+By default, TabletWM uses the currently active keyboard layout. But is possible to edit the file /etc/tabletwm/tabletwm.cfg and set a desired keyboard layout (example: es). This layout will be loaded by TabletWM at startup with setxkbmap.
+
+Also is possible to change the layout for the on-screen keyboard. Currently only the US layout is available, but copying the /etc/tabletwm/us.keymap to a new file, and modifying it, allows to change the possition of the codes (of course, you must modify /etc/tabletwm/tabletwm.cfg to specify the language for the on-screen keyboard).
+
+The format for the /etc/tabletwm/tabletwm.cfg file is this:
+
+    keyboard_lang:us
+    onscreen_keyboard_lang:us
+    launcher_command:/usr/bin/xterm
+
+The first entry specifies that the keyboard layout must be US.
+
+The second entry specifies that the on-screen keyboard layout must be US (so the layout will be taken from the file /etc/tabletwm/us.keymap).
+
+The third entry still doesn't work, but will contain the command to launch when the user touches the green button.
+
+The lines must not contain blank spaces.
 
 ## License
 

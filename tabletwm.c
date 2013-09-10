@@ -64,7 +64,6 @@ int main() {
 
 		const xcb_query_extension_reply_t *r2=xcb_get_extension_data(conn,&xcb_randr_id);
 		xrandr=r2->first_event;
-		free((void *)r2);
 	}
 	free(r);
 
@@ -131,6 +130,7 @@ int main() {
 	}
 	wincache_destroy_element(key_win.window);
 	destroy_keycodes();
+	xcb_flush(conn);
 	xcb_disconnect(conn);
 	return(0);
 }

@@ -74,6 +74,7 @@ void init_load_config() {
 		}
 		printf("Unknown command in config file: %s\n",string);
 	}
+	fclose(cfile);
 }
 
 void init_tabletwm() {

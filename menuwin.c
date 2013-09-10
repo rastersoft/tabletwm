@@ -216,6 +216,7 @@ void fill_keycodes() {
 		}
 	}
 
+	fclose(keyboard_file);
 	keyboard_current_block=0;
 	xkb_keymap_unref(keymap);
 	xkb_context_unref(context);

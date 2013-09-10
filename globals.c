@@ -37,3 +37,7 @@ struct key_win_s key_win;
 struct key_element *keyboard_lowercase;
 int keyboard_blocks;
 int keyboard_current_block;
+
+char lang_xkbmap[32]={0};
+char lang_onscreen[32]={0};
+char launcher_program[256]={0};

@@ -130,6 +130,7 @@ int main() {
 		free(e);
 	}
 	wincache_destroy_element(key_win.window);
+	destroy_keycodes();
 	xcb_disconnect(conn);
 	return(0);
 }

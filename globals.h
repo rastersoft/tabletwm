@@ -30,7 +30,8 @@
 
 #define DEBUG
 
-#define KEYBOARD_FILE "keyboard_layout.sys"
+#define CONFIG_FILE "tabletwm.cfg"
+#define BASE_CONFIG_DIR "/etc/tabletwm.d"
 
 enum TWM_ATOM_DEFS {
 	TWM_ATOM_WM_SIZE_HINTS=0,
@@ -140,5 +141,9 @@ extern struct key_element *keyboard_lowercase;
 
 extern struct key_win_s key_win;
 extern char keep_running;
+
+extern char lang_xkbmap[];
+extern char lang_onscreen[];
+extern char launcher_program[];
 
 #endif // _H_GLOBALS_

@@ -28,3 +28,12 @@ menuwin.o: menuwin.c menuwin.h globals.h
 
 clean:
 	rm -f *.o tabletwm
+
+install:
+	install -d /etc/tabletwm.d
+	install tabletwm /usr/local/bin
+	install tabletwm.cfg.example /etc/tabletwm.d/
+	install *.keymap /etc/tabletwm.d/
+
+uninstall:
+	rm -rf /usr/local/bin/tabletwm

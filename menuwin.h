@@ -51,5 +51,6 @@ void menuwin_expose(xcb_expose_event_t *ee);
 void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b);
 void menuwin_press_key_at(int x, int y);
 uint32_t init_utf8_to_keysym(unsigned char *data);
+void destroy_keycodes();
 
 #endif // _H_MENUWIN

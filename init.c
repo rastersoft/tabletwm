@@ -26,6 +26,56 @@
 #include "init.h"
 #include "wincache.h"
 
+void init_load_config() {
+
+	char string[300];
+	char *text;
+	int retval;
+	
+	FILE *cfile;
+	
+	sprintf(string,"%s/%s",BASE_CONFIG_DIR,CONFIG_FILE);
+	cfile=fopen(string,"r");
+	if (cfile==NULL) {
+		printf("Can't open configuration file %s\n",string);
+		exit(-1);
+	}
+	strcpy(lang_xkbmap,"us");
+	strcpy(lang_onscreen,"us");
+	strcpy(launcher_program,"/usr/bin/xterm");
+	while(!feof(cfile)) {
+		retval=fscanf(cfile,"%s",string);
+		if (retval<1) {
+			continue;
+		}
+		text=string;
+		while(*text==' ') {
+			text++;
+		}
+		if (text[0]=='#') { // comment
+			continue;
+		}
+		if (text[0]=='\n') { // empty line
+			continue;
+		}
+		if(!strncmp("keyboard_lang:",text,14)) {
+			strcpy(lang_xkbmap,text+14);
+			sprintf(string,"setxkbmap %s",lang_xkbmap);
+			system(string);
+			continue;
+		}
+		if(!strncmp("onscreen_keyboard_lang:",text,23)) {
+			strcpy(lang_onscreen,text+23);
+			continue;
+		}
+		if(!strncmp("launcher_command:",text,17)) {
+			strcpy(launcher_program,text+17);
+			continue;
+		}
+		printf("Unknown command in config file: %s\n",string);
+	}
+}
+
 void init_tabletwm() {
 
 	xcb_void_cookie_t void_cookie;
@@ -78,6 +128,8 @@ void init_tabletwm() {
 		"_NET_ACTIVE_WINDOW",
 		"WM_HINTS",
 	};
+
+	init_load_config();
 
 	wincache_init();
 

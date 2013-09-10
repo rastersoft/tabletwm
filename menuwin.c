@@ -119,7 +119,6 @@ void fill_keycodes() {
 				keyboard_lowercase[counter].type=KEY_PH;
 				retval=fscanf(keyboard_file,"%s",keysym_asc);
 				keyboard_lowercase[counter].keysym=xkb_keysym_from_name(keysym_asc,0);
-				printf("keysym %s; codigo %d\n",keysym_asc,keyboard_lowercase[counter].keysym);
 				if (keyboard_lowercase[counter].keysym==0) {
 					printf("Unknown keysym %s\n",keysym_asc);
 					keyboard_lowercase[counter].type=KEY_BLANK;

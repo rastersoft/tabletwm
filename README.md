@@ -26,7 +26,7 @@ Ctrl+TAB allows to work easily with applications that uses several windows (like
 
 Pressing the MENU key (the one at the right, between WINDOWS and CTRL) will expand a little options bar with several icons. The first one, red and with an X, will close the current window (like Alt+F4). The next one, with two **applications** and an arrow, allows to switch to the next app (like Alt+TAB). Finally, the next one with two **windows** allows to switch to the next window of the same application group. The last icon still doesn't work, but will allow to launch an **application launcher**. This bar can also be expanded by moving the cursor to the bottom of the screen.
 
-By pressing Ctrl+MENU, both the options bar and a virtual keyboard will be expanded (in a near future, a modification in the touch driver will generate this combination doing a touch with three fingers). A new icon will be available in the options bar, that allows to move the keyboard to the top or bottom middle.
+By pressing Ctrl+MENU, both the options bar and a virtual keyboard will be expanded. A new icon will be available in the options bar, that allows to move the keyboard to the top or bottom middle. This is useful when using the GSL1680 user-space driver, because it generates this keypress when touching with three fingers.
 
 
 ## License

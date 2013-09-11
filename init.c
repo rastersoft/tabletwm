@@ -68,6 +68,10 @@ void init_load_config() {
 			strcpy(lang_onscreen,text+23);
 			continue;
 		}
+		if(!strncmp("onscreen_keyboard_map:",text,22)) {
+			strcpy(lang_onscreen,text+22);
+			continue;
+		}
 		if(!strncmp("launcher_command:",text,17)) {
 			strcpy(launcher_program,text+17);
 			continue;

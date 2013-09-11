@@ -337,3 +337,14 @@ void support_set_focus() {
 	xcb_change_property(conn,XCB_PROP_MODE_REPLACE,scr->root,atoms[TWM_ATOM__NET_ACTIVE_WINDOW],XCB_ATOM_WINDOW,32,1,&final_window);
 	xcb_flush(conn);
 }
+
+void support_launch_manager() {
+
+	int f;
+	
+	f=fork();
+	if (f==0) {
+		system(launcher_program);
+		exit(0);
+	}
+}

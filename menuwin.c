@@ -688,6 +688,10 @@ void menuwin_press_key_at(int x, int y) {
 		case 9:
 			support_next_window(0);
 		break;
+		case 10:
+		case 11:
+			support_launch_manager();
+		break;
 		}
 		return;
 	}

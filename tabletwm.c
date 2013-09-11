@@ -41,7 +41,7 @@ int main() {
 
 	uint8_t xrandr;
 
-	printf("TabletWM version 0.4\n");
+	printf("TabletWM version 0.5\n");
 
 	init_tabletwm();
 
@@ -130,6 +130,7 @@ int main() {
 	}
 	wincache_destroy_element(key_win.window);
 	destroy_keycodes();
+	xcb_destroy_window(conn,key_win.window);
 	xcb_flush(conn);
 	xcb_disconnect(conn);
 	return(0);

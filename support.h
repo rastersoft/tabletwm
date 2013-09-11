@@ -45,4 +45,6 @@ void support_next_window(int next_app);
 void support_close_window();
 void support_set_focus();
 
+void support_launch_manager();
+
 #endif // _H_SUPPORT_

@@ -1,9 +1,10 @@
 CC=gcc -c
 LN=gcc
-CFLAGS= -g -O0
+CFLAGS= -O2
 
 tabletwm: tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o
 	$(LN) -o tabletwm tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm xcb-keysyms xcb-xtest cairo xkbcommon`
+	strip tabletwm
 
 tabletwm.o: tabletwm.c globals.h init.h actions.h
 	$(CC) $(CFLAGS) -o tabletwm.o tabletwm.c `pkg-config --cflags xcb xcb-util xcb-randr cairo`

@@ -39,7 +39,7 @@ void fill_keycodes() {
 	const struct xkb_rule_names rules={
 		.rules=NULL,
 		.model=NULL,
-		.layout=NULL,
+		.layout="us",
 		.variant=NULL,
 		.options=NULL
 	};
@@ -205,7 +205,7 @@ void fill_keycodes() {
 					continue;
 				}
 				for(k=0;k<counter;k++) { // and now we check each desired key with the keysymbol obtained
-					if ((keyboard_lowercase[k].type!=KEY_BLANK)&&(keyboard_lowercase[k].keysym==keysym)) {
+					if ((keyboard_lowercase[k].keycode==0)&&(keyboard_lowercase[k].type!=KEY_BLANK)&&(keyboard_lowercase[k].keysym==keysym)) {
 						keyboard_lowercase[k].keycode=j;
 						keyboard_lowercase[k].modifier=keycode_mod;
 					}
@@ -213,6 +213,56 @@ void fill_keycodes() {
 			}
 			xkb_state_unref(state);
 		}
+
+		// Now assign new keysyms to keycodes not used, to allow other keysyms not available in US keyboards
+
+		xcb_key_symbols_t *symbols;
+		
+		symbols=xcb_key_symbols_alloc(conn);
+		xcb_flush(conn);
+
+		xcb_keycode_t keycode=8;
+		xcb_keycode_t keycode_found;
+		
+		xcb_keysym_t keysyms[4];
+		xcb_keycode_t keycode_shift;
+
+		keycode_shift=*xcb_key_symbols_get_keycode(symbols,XKB_KEY_Shift_L);
+		for(k=0;k<max_keys;k++) { // and now we check each desired key with the keysymbol obtained
+			if ((keyboard_lowercase[k].keycode==0)&&(keyboard_lowercase[k].type!=KEY_BLANK)&&(keyboard_lowercase[k].type!=KEY_JUMPTO)) {
+				// this key is not available in US keyboards; let's redefine a keycode for it
+				keycode_found=0;
+				while(keycode<256) {
+					if ((0==xcb_key_symbols_get_keysym(symbols,keycode,0))&&
+						(0==xcb_key_symbols_get_keysym(symbols,keycode,1))&&
+						(0==xcb_key_symbols_get_keysym(symbols,keycode,2))&&
+						(0==xcb_key_symbols_get_keysym(symbols,keycode,3))) {
+							keycode_found=keycode;
+							break;
+					}
+					keycode++;
+				}
+			
+				if (keycode_found==0) {
+					printf("No more codes available\n");
+					break; // there are no more free keycodes available
+				}
+				keycode=keycode_found;
+				keysyms[0]=keyboard_lowercase[k].keysym;
+				keysyms[1]=0;
+				keysyms[2]=keyboard_lowercase[k].keysym;
+				keysyms[3]=0;
+				xcb_change_keyboard_mapping(conn,1,keycode,4,keysyms);
+				keyboard_lowercase[k].keycode=keycode;
+				if (keysyms[0]==209) {
+					keyboard_lowercase[k].modifier=keycode_shift;
+				} else {
+					keyboard_lowercase[k].modifier=0;
+				}
+				keycode++;
+			}
+		}
+		xcb_key_symbols_free(symbols);
 	}
 
 	fclose(keyboard_file);
@@ -566,6 +616,9 @@ void menuwin_paint_keyboard() {
 					cairo_fill(key_win.cr);
 				break;
 				case KEY_PH:
+					if (keyboard_lowercase[counter].keycode==0) { // this letter has no keycode assigned. Paint it red
+						cairo_set_source_rgb(key_win.cr,1.0,0.0,0.0);
+					}
 					if (keyboard_lowercase[counter].size!=KEYS_FONT_SIZE) {
 						cairo_set_font_size(key_win.cr,keyboard_lowercase[counter].size);
 					}
@@ -574,6 +627,9 @@ void menuwin_paint_keyboard() {
 					cairo_show_text(key_win.cr,keyboard_lowercase[counter].g_element);
 					if (keyboard_lowercase[counter].size!=KEYS_FONT_SIZE) {
 						cairo_set_font_size(key_win.cr,KEYS_FONT_SIZE);
+					}
+					if (keyboard_lowercase[counter].keycode==0) { // this letter has no keycode assigned. Paint it red
+						cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
 					}
 				break;
 
@@ -710,6 +766,7 @@ void menuwin_press_key_at(int x, int y) {
 						xcb_keycode_t keycode=keyboard_lowercase[i].keycode;
 						xcb_keycode_t keymod =keyboard_lowercase[i].modifier;
 						if (keycode!=0) {
+							printf("Emiting keycode %d with modifier %d\n",keycode,keymod);
 							if (keymod!=0) {
 								xcb_test_fake_input(conn,XCB_KEY_PRESS,keymod,XCB_CURRENT_TIME,XCB_NONE,0,0,0);
 								xcb_flush(conn);

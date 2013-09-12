@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.5
+Version 0.6
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
@@ -28,9 +28,9 @@ Pressing the MENU key (the one at the right, between WINDOWS and CTRL) will expa
 
 By pressing Ctrl+MENU, both the options bar and a virtual keyboard will be expanded. A new icon will be available in the options bar, that allows to move the keyboard to the top or bottom part of the screen. This is useful when using the GSL1680 user-space driver, because it generates this keypress when touching with three fingers.
 
-By default, TabletWM uses the currently active keyboard layout. But is possible to edit the file /etc/tabletwm/tabletwm.cfg and set a desired keyboard layout (example: es). This layout will be loaded by TabletWM at startup with setxkbmap.
+By default, TabletWM uses the currently active layout for the physical keyboard. But is possible to edit the file /etc/tabletwm/tabletwm.cfg and set a desired keyboard layout (example: es). This layout will be loaded by TabletWM at startup with setxkbmap.
 
-Also is possible to change the layout for the on-screen keyboard. Currently only the US, QWERTZ and AZERTY layouts are available, but copying the /etc/tabletwm/us.keymap to a new file, and modifying it, allows to change the possition of the codes (of course, you must modify /etc/tabletwm/tabletwm.cfg to specify the language for the on-screen keyboard).
+Also is possible to change the layout for the on-screen keyboard. Currently only the US, ES, QWERTZ and AZERTY layouts are available, but copying the /etc/tabletwm/us.keymap to a new file, and modifying it, allows to change the possition of the codes (of course, you must modify /etc/tabletwm/tabletwm.cfg to specify the language for the on-screen keyboard).
 
 The format for the /etc/tabletwm/tabletwm.cfg file is this:
 
@@ -38,7 +38,7 @@ The format for the /etc/tabletwm/tabletwm.cfg file is this:
     onscreen_keyboard_map:us
     launcher_command:/usr/bin/xterm
 
-The first entry specifies that the keyboard layout must be US.
+The first entry specifies that the physical keyboard layout must be US. This is set by calling to **setxkbmap**.
 
 The second entry specifies that the on-screen keyboard layout must be US (so the layout will be taken from the file /etc/tabletwm/us.keymap).
 
@@ -46,13 +46,13 @@ The third entry still doesn't work, but will contain the command to launch when 
 
 The lines must not contain blank spaces.
 
+
 ## Known bugs
 
-* Currently is not possible to assign non-US characters to the keys. In theory it shoud work, but it seems that xkb_state_key_get_one_sym() doesn't work fine with that keycodes.
+* Some symbols (like the spanish Ñ -ntilde-) are shown only in lowercase form, even when defined in uppercase in the keymap file.
 
 
 ## License
-
 
 TabletWM is distributed under the terms of the GPLv2 or (at your option) any later version. The terms of this license are available in the COPYING file.
 

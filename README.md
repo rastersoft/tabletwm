@@ -60,6 +60,7 @@ The W and H parameters specify the width and the height of the key. The default 
 
 * BLANK 1 1: when a key is bigger that one possition, the other possitions that it occupies must be filled with BLANK 1 1 commands.
 * KEYSYM W H keysym: *keysym* is a keysym definition, availables in /usr/include/xkbcommon/xkbcommon-keysyms.h, but removing the XKB_KEY_ part.
+* KEY W H letter: *letter* is an UTF-8 character. Since a lot of keysym numbers are the same than its UTF-8 character, this can work for them (but be careful, it doesn't work for all, only for very common characters).
 * KEYSYMTEXT W H keysym text: first, a keysym definition (like in KEYSYM), followed by a text that will be displayed in the key. Useful for non-graphic keys like function ones (F1 to F12).
 * TAB W H: has no params. Creates a TAB key.
 * SPACE W H: has no params. Creates a SPACE key.
@@ -72,6 +73,8 @@ The W and H parameters specify the width and the height of the key. The default 
 * JUMPTO W H block content: *block* contains the layout number that will be shown when the user touches this key. *content* specifies what text/symbol is shown in this key. It can be *GEN* (shows *...*), *SHIFT* (shows a shift arrow), *LETTERS* (shows *abc*) or *symbols* (shows *123*).
 
 The name of the file must be *XXXXXX.keymap*, being *XXXXXX* the text that the user must put in the *onscreen_keyboard_map* entry in the configuration file.
+
+If TabletWM is unable to map a character to a keycode, that key will be shown in red color.
 
 ## Known bugs
 

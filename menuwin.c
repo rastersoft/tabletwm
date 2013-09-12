@@ -227,6 +227,19 @@ void fill_keycodes() {
 		xcb_keysym_t keysyms[4];
 		xcb_keycode_t keycode_shift;
 
+		struct lower_upper_t {xcb_keysym_t upper_first;
+				xcb_keysym_t upper_last;
+				xcb_keysym_t lower_first;
+				xcb_keysym_t lower_last;
+			};
+
+		struct lower_upper_t lower_upper[] = {
+				{XKB_KEY_Agrave,XKB_KEY_Odiaeresis,XKB_KEY_agrave,XKB_KEY_odiaeresis},
+				{XKB_KEY_Oslash,XKB_KEY_THORN,XKB_KEY_oslash,XKB_KEY_thorn},
+				{0,0,0,0}
+			};
+		struct lower_upper_t *iter_lu;
+
 		keycode_shift=*xcb_key_symbols_get_keycode(symbols,XKB_KEY_Shift_L);
 		for(k=0;k<max_keys;k++) { // and now we check each desired key with the keysymbol obtained
 			if ((keyboard_lowercase[k].keycode==0)&&(keyboard_lowercase[k].type!=KEY_BLANK)&&(keyboard_lowercase[k].type!=KEY_JUMPTO)) {
@@ -252,12 +265,28 @@ void fill_keycodes() {
 				keysyms[1]=0;
 				keysyms[2]=keyboard_lowercase[k].keysym;
 				keysyms[3]=0;
-				xcb_change_keyboard_mapping(conn,1,keycode,4,keysyms);
-				keyboard_lowercase[k].keycode=keycode;
-				if (keysyms[0]==209) {
-					keyboard_lowercase[k].modifier=keycode_shift;
-				} else {
-					keyboard_lowercase[k].modifier=0;
+				for(iter_lu=lower_upper;iter_lu->upper_first;iter_lu++) {
+					if ((keysyms[0]>=iter_lu->upper_first)&&(keysyms[0]<=iter_lu->upper_last)) { // it's an uppercase special character
+						keysyms[0]|=0x20; // first character as lowercase
+						break;
+					}
+					if ((keysyms[0]>=iter_lu->lower_first)&&(keysyms[0]<=iter_lu->lower_last)) { // it's a lowercase special character
+						keysyms[2]&=0xDF; // second character as uppercase
+						break;
+					}
+				}
+				xcb_change_keyboard_mapping(conn,1,keycode,4,keysyms); // insert the new keysym
+				for(j=k;j<max_keys;j++) { // set the keycode and the shift modifier, if needed, to all keys with that keysyms
+					if (keyboard_lowercase[j].keysym==keysyms[0]) {
+						keyboard_lowercase[j].keycode=keycode;
+						keyboard_lowercase[j].modifier=0;
+						continue;
+					}
+					if (keyboard_lowercase[j].keysym==keysyms[2]) {
+						keyboard_lowercase[j].keycode=keycode;
+						keyboard_lowercase[j].modifier=keycode_shift;
+						continue;
+					}
 				}
 				keycode++;
 			}

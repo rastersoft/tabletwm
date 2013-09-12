@@ -47,9 +47,35 @@ The third entry still doesn't work, but will contain the command to launch when 
 The lines must not contain blank spaces.
 
 
+## KEYMAP file format
+
+The KEYMAP files allows to specify the layout of the on-screen keyboard. This file has to contain several lines, each one describing one key.
+
+The first line in the file must contain a **BLOCKS** command, followed by the number of *layouts* or *keyboards* that will be defined in this file. Ussually this number is 3: one lowercase layout, one uppercase layout, and one numbers/symbols layout. But it can be changed to allow to put more symbols.
+
+After that, there must come as many blocks of 48 key definitions (because each layout contains 48 keys). The format is *command W H [params]*.
+The W and H parameters specify the width and the height of the key. The default size is 1 1. Large keys like *return* are 1 2, or the *space bar* which are 3 1.
+
+*Command* allows to specify the keys themselves. It can be:
+
+* BLANK 1 1: when a key is bigger that one possition, the other possitions that it occupies must be filled with BLANK 1 1 commands.
+* KEYSYM W H keysym: *keysym* is a keysym definition, availables in /usr/include/xkbcommon/xkbcommon-keysyms.h, but removing the XKB_KEY_ part.
+* KEYSYMTEXT W H keysym text: first, a keysym definition (like in KEYSYM), followed by a text that will be displayed in the key. Useful for non-graphic keys like function ones (F1 to F12).
+* TAB W H: has no params. Creates a TAB key.
+* SPACE W H: has no params. Creates a SPACE key.
+* RETURN W H: has no params. Creates a RETURN key.
+* DELETE W H: has no params. Creates a DELETE key.
+* UP W H: has no params. Creates a CURSOR UP key.
+* DOWN W H: has no params. Creates a CURSOR DOWN key.
+* LEFT W H: has no params. Creates a CURSOR LEFT key.
+* RIGHT W H: has no params. Creates a CURSOR RIGHT key.
+* JUMPTO W H block content: *block* contains the layout number that will be shown when the user touches this key. *content* specifies what text/symbol is shown in this key. It can be *GEN* (shows *...*), *SHIFT* (shows a shift arrow), *LETTERS* (shows *abc*) or *symbols* (shows *123*).
+
+The name of the file must be *XXXXXX.keymap*, being *XXXXXX* the text that the user must put in the *onscreen_keyboard_map* entry in the configuration file.
+
 ## Known bugs
 
-* Some symbols (like the spanish Ñ -ntilde-) are shown only in lowercase form, even when defined in uppercase in the keymap file.
+* Windows existing before launching TabletWM are not recognized by it.
 
 
 ## License

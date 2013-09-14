@@ -153,6 +153,9 @@ void action_configure_request(xcb_generic_event_t *e) {
 	uint32_t v[7];
 	int i;
 	int nx,ny,nw,nh;
+#ifdef DEBUG
+	printf("Configure request for window %d\n",ee->window);
+#endif
 
 	struct support_new_size sizes;
 	memset(&sizes,0,sizeof(struct support_new_size));

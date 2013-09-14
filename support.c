@@ -78,6 +78,9 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 
 	switch(what_to_do) {
 	case 1:
+#ifdef DEBUG
+		printf("Maximize if resizable; center if not\n");
+#endif
 		if (element->resizable==0) {
 			int nx,ny;
 			if (size->new_w) {
@@ -96,9 +99,12 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 					size->force_change=1;
 				}
 			}
-			break;
 		}
+	break;
 	case 0:
+#ifdef DEBUG
+		printf("Maximize always\n");
+#endif
 		if (((size->new_x==1)&&(size->x!=0))||(size->force_change==1)) {
 			size->new_x=1;
 			size->x=0;
@@ -114,6 +120,9 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		size->force_change=1;
 	break;
 	case 2:
+#ifdef DEBUG
+		printf("Reduce if bigger; center if not\n");
+#endif
 		if (size->new_w) {
 			if (size->w>width) { // if size is bigger than the screen, resize to the screen
 				size->new_x=1;
@@ -148,6 +157,9 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		}
 	break;
 	case 3:
+#ifdef DEBUG
+		printf("Keep as-is\n");
+#endif
 	break;
 	default:
 	break;

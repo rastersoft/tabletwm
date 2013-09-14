@@ -149,6 +149,9 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 		element->type = 0xFFFFFFFF;
 	} else {
 		element->type= ((uint32_t *)(xcb_get_property_value(window_type)))[0];
+#ifdef DEBUG
+	printf("Window type: %d\n",element->type);
+#endif
 	}
 	free(window_type);
 	
@@ -161,6 +164,8 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 			element->instance=strdup(wmclass_data.instance_name);
 			xcb_icccm_get_wm_class_reply_wipe(&wmclass_data);
 		} else {
+			element->class_name=NULL;
+			element->instance=NULL;
 			free(wmclass);
 		}
 	}
@@ -186,6 +191,9 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 				maxw=v2[2];
 				maxh=v2[3];
 				if ((size_hints->length!=0)&&(minw!=0)&&(minh!=0)&&(maxw!=0)&&(maxh!=0)&&(minh==maxh)&&(minw==maxw)) {
+#ifdef DEBUG
+					printf("Window not resizable\n");
+#endif
 					element->resizable=0;
 				}
 			}

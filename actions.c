@@ -90,8 +90,6 @@ void action_destroy_notify(xcb_generic_event_t *e) {
 
 void action_map_notify(xcb_generic_event_t *e) {
 
-	support_send_dock_up(NULL,NULL);
-	xcb_flush(conn);
 
 }
 
@@ -100,14 +98,13 @@ void action_map_request(xcb_generic_event_t *e) {
 	struct wincache_element *element;
 
 	xcb_map_request_event_t *ee=(xcb_map_request_event_t *)e;
-
+#ifdef DEBUG
+	printf("Mapping %d\n",ee->window);
+#endif
 	element=wincache_fill_element(ee->window);
 	if (element) {
 		element->mapped=1;
 	}
-#ifdef DEBUG
-	printf("Mapping %d\n",ee->window);
-#endif
 	xcb_map_window(conn,ee->window);
 
 	uint32_t data[]={1,XCB_WINDOW_NONE}; // Normal status
@@ -115,7 +112,12 @@ void action_map_request(xcb_generic_event_t *e) {
 	xcb_flush(conn);
 
 	struct support_new_size sizes;
-	memset(&sizes,0,sizeof(struct support_new_size));
+	if (element->asked_for_new_size==1) {
+		memcpy(&sizes,&element->new_size,sizeof(struct support_new_size));
+		element->asked_for_new_size=0;
+	} else {
+		memset(&sizes,0,sizeof(struct support_new_size));
+	}
 
 	support_calculate_new_size(ee->window,&sizes);
 
@@ -144,6 +146,7 @@ void action_map_request(xcb_generic_event_t *e) {
 	}
 
 	support_set_focus();
+	support_send_dock_up(NULL,NULL);
 }
 
 void action_configure_request(xcb_generic_event_t *e) {

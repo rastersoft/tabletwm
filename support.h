@@ -23,19 +23,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
-
-struct support_new_size {
-
-	uint8_t force_change;
-	uint8_t new_x; // x variable contains a value
-	uint8_t new_y; // y variable contains a value
-	uint8_t new_w; // w variable contains a value
-	uint8_t new_h; // h variable contains a value
-	int32_t x;
-	int32_t y;
-	int32_t w;
-	int32_t h;
-};
+#include "globals.h"
 
 void support_capture_key(uint32_t mods,uint32_t key);
 void support_calculate_new_size(xcb_window_t window, struct support_new_size *size);

@@ -28,7 +28,7 @@
 
 #define TWM_NAME "tabletwm"
 
-//#define DEBUG
+#define DEBUG
 
 #define CONFIG_FILE "tabletwm.cfg"
 #define BASE_CONFIG_DIR "/etc/tabletwm.d"
@@ -82,6 +82,19 @@ enum TWM_ATOM_DEFS {
 
 	TWM_ATOM_LAST_VALUE};
 
+struct support_new_size {
+
+	uint8_t force_change;
+	uint8_t new_x; // x variable contains a value
+	uint8_t new_y; // y variable contains a value
+	uint8_t new_w; // w variable contains a value
+	uint8_t new_h; // h variable contains a value
+	int32_t x;
+	int32_t y;
+	int32_t w;
+	int32_t h;
+};
+
 struct wincache_element {
 
 	struct wincache_element *prev;
@@ -96,6 +109,12 @@ struct wincache_element {
 	uint8_t  resizable;
 	uint8_t  is_transient;
 	uint8_t  input_flag;
+	uint32_t min_width;
+	uint32_t min_height;
+	uint32_t max_width;
+	uint32_t max_height;
+	char     asked_for_new_size;
+	struct support_new_size new_size;
 };
 
 extern struct wincache_element wincache_list;

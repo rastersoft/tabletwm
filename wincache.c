@@ -37,7 +37,11 @@ void wincache_init_element(struct wincache_element *element) {
 	element->class_name=NULL;
 	element->instance=NULL;
 	element->input_flag=0;
-
+	element->min_width=0;
+	element->min_height=0;
+	element->max_width=0;
+	element->max_height=0;
+	element->asked_for_new_size=0;
 }
 
 void wincache_init() {
@@ -183,14 +187,17 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 			uint32_t *v2,j;
 			int32_t minw,minh,maxw,maxh;
 
-			
 			if ((size_hints)&&(size_hints->length==4)) {
 				v2=((uint32_t *)(xcb_get_property_value(size_hints)));
-				minw=v2[0];
-				minh=v2[1];
-				maxw=v2[2];
-				maxh=v2[3];
-				if ((size_hints->length!=0)&&(minw!=0)&&(minh!=0)&&(maxw!=0)&&(maxh!=0)&&(minh==maxh)&&(minw==maxw)) {
+				element->min_width =v2[0];
+				element->min_height=v2[1];
+				element->max_width =v2[2];
+				element->max_height=v2[3];
+#ifdef DEBUG
+				printf("sizes: %dx%d  %dx%d\n",element->min_width,element->min_height,element->max_width,element->max_height);
+#endif DEBUG
+				if ((element->min_width!=0)&&(element->min_height!=0)&&(element->max_width!=0)&&(element->max_height!=0)&&
+					(element->min_height==element->max_height)&&(element->min_width==element->max_width)) {
 #ifdef DEBUG
 					printf("Window not resizable\n");
 #endif

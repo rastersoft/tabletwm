@@ -43,8 +43,14 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	
 	struct wincache_element *element;
 	
-	element=wincache_find_element(window);
-	if ((element==NULL)||(element->filled==0)||(element->mapped==0)) {
+	element=wincache_add_element(window);
+	if (element==NULL) {
+		return;
+	}
+	
+	if ((element->filled==0)||(element->mapped==0)) {
+		element->asked_for_new_size=1;
+		memcpy(&element->new_size,size,sizeof(struct support_new_size));
 		return;
 	}
 
@@ -99,24 +105,25 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 					size->force_change=1;
 				}
 			}
+			break;
 		}
-	break;
+		// if we reach here, we want to maximize it
 	case 0:
 #ifdef DEBUG
 		printf("Maximize always\n");
 #endif
-		if (((size->new_x==1)&&(size->x!=0))||(size->force_change==1)) {
+		if ((size->new_x==0)||((size->new_x==1)&&(size->x!=0))||(size->force_change==1)) {
 			size->new_x=1;
 			size->x=0;
 		}
-		if (((size->new_y==1)&&(size->y!=0))||(size->force_change==1)) {
+		if ((size->new_y==0)||((size->new_y==1)&&(size->y!=0))||(size->force_change==1)) {
 			size->new_y=1;
 			size->y=0;
 		}
 		size->new_w=1;
 		size->new_h=1;
-		size->w=width;
-		size->h=height;
+		size->w=(width >element->min_width ) ? width  : element->min_width;
+		size->h=(height>element->min_height) ? height : element->min_height;
 		size->force_change=1;
 	break;
 	case 2:
@@ -164,6 +171,9 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	default:
 	break;
 	}
+#ifdef DEBUG
+	printf("New position: %d,%d; new size: %dx%d\n",size->x,size->y,size->w,size->h);
+#endif
 }
 
 void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
@@ -339,7 +349,9 @@ void support_set_focus() {
 #endif
 
 		if ((element->mapped)&&(element->input_flag)&&(element->type!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+#ifdef DEBUG
 			printf("Focus for window %d\n",window);
+#endif
 			xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,window,XCB_TIME_CURRENT_TIME);
 			final_window=window;
 			break;

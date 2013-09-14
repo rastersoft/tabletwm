@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.6
+Version 0.7
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
@@ -79,6 +79,7 @@ If TabletWM is unable to map a character to a keycode, that key will be shown in
 ## Known bugs
 
 * Windows existing before launching TabletWM are not recognized by it.
+* When using Firefox or iceweasel, the suggestions list (shown when typing an URL) is behind the on-screen keyboard, but receives the touches. It is recommended to disable it (Edit->Preferences->Privacy->Location Bar = Nothing).
 
 
 ## License

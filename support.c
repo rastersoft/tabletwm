@@ -380,6 +380,8 @@ void support_launch_manager() {
 	} else { // the launcher has been launched. Show its window
 		value=XCB_STACK_MODE_ABOVE;
 		xcb_configure_window (conn,window, XCB_CONFIG_WINDOW_STACK_MODE, &value);
-		support_send_dock_up(NULL,NULL);
 	}
+	key_win.possition=0;
+	support_send_dock_up(NULL,NULL);
+	menuwin_set_window(); // hide the keyboard when showing the launcher
 }

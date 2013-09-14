@@ -161,7 +161,7 @@ void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
 	xcb_window_t *wp;
 	xcb_query_tree_reply_t *r;
 
-	const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
+	uint32_t value;
 
 	if (r2==NULL) {
 		r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
@@ -178,7 +178,8 @@ void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
 			continue;
 		}
 		if ((element->mapped)&&(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
-			xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
+			value=XCB_STACK_MODE_ABOVE;
+			xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, &value);
 		}
 	}
 	xcb_flush(conn);
@@ -245,8 +246,8 @@ void support_next_window(int next_app) {
 		const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
 		/* Move the window to the top of the stack */
 		xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, value);
-		support_send_dock_up(r,wp);
 		support_set_focus();
+		support_send_dock_up(r,wp);
 		// xcb_flush(conn); // not needed because support_send_dock_up() and support_set_focus() already do it
 	} else { // no window found
 		if (next_app==1) { // there is only one type of app, but there can be several windows. Let's try to swap between them...
@@ -294,8 +295,6 @@ void support_close_window() {
 		}
 	}
 	free(reply);
-	
-	support_set_focus();
 }
 
 void support_set_focus() {
@@ -324,10 +323,11 @@ void support_set_focus() {
 			continue;
 		}
 #ifdef DEBUG
-		printf("Mapped: %d, input flag: %d, type: %d\n",element->mapped,element->input_flag,element->type);
+		printf("Searching: %d, input flag: %d, type: %d (%d %d %d %d)\n",element->mapped,element->input_flag,element->type,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP],atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK],atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLBAR],atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_MENU]);
 #endif
 
 		if ((element->mapped)&&(element->input_flag)&&(element->type!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+			printf("Focus for window %d\n",window);
 			xcb_set_input_focus(conn,XCB_INPUT_FOCUS_PARENT,window,XCB_TIME_CURRENT_TIME);
 			final_window=window;
 			break;

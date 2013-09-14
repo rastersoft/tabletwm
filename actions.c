@@ -88,6 +88,13 @@ void action_destroy_notify(xcb_generic_event_t *e) {
 	wincache_destroy_element(ee->window);
 }
 
+void action_map_notify(xcb_generic_event_t *e) {
+
+	support_send_dock_up(NULL,NULL);
+	xcb_flush(conn);
+
+}
+
 void action_map_request(xcb_generic_event_t *e) {
 
 	struct wincache_element *element;
@@ -98,6 +105,9 @@ void action_map_request(xcb_generic_event_t *e) {
 	if (element) {
 		element->mapped=1;
 	}
+#ifdef DEBUG
+	printf("Mapping %d\n",ee->window);
+#endif
 	xcb_map_window(conn,ee->window);
 
 	uint32_t data[]={1,XCB_WINDOW_NONE}; // Normal status
@@ -133,7 +143,6 @@ void action_map_request(xcb_generic_event_t *e) {
 		xcb_configure_window(conn,ee->window,flags,v);
 	}
 
-	support_send_dock_up(NULL,NULL); // send DOCK windows top
 	support_set_focus();
 }
 
@@ -195,11 +204,9 @@ void action_configure_request(xcb_generic_event_t *e) {
 		v[i]=ee->stack_mode;
 	}
 	xcb_configure_window(conn,ee->window,ee->value_mask,v);
+	xcb_flush(conn);
 	if (ee->value_mask&XCB_CONFIG_WINDOW_STACK_MODE) {
-		support_send_dock_up(NULL,NULL); // send DOCK windows top
 		support_set_focus();
-	} else {
-		xcb_flush(conn);
 	}
 }
 

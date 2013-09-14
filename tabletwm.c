@@ -98,6 +98,11 @@ int main() {
 				case(XCB_MAP_REQUEST):
 					action_map_request(e);
 				break;
+				case(XCB_MAP_NOTIFY):
+				case(XCB_MAPPING_NOTIFY):
+				case(XCB_CONFIGURE_NOTIFY):
+					action_map_notify(e);
+				break;
 				case(XCB_CONFIGURE_REQUEST):
 					action_configure_request(e);
 				break;

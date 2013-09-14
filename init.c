@@ -212,7 +212,7 @@ void init_tabletwm() {
 	// It is also used to ensure that the window manager is recognized as an Extended Window Manager Hints WM
 	// By default it occupies one pixel at the bottom of the screen, to allow to detect when the mouse is moved to the bottom
 	key_win.window = xcb_generate_id(conn);
-	uint32_t values[1] = {XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_ENTER_WINDOW|XCB_EVENT_MASK_LEAVE_WINDOW};
+	uint32_t values[1] = {XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_ENTER_WINDOW|XCB_EVENT_MASK_LEAVE_WINDOW};
 	void_cookie=xcb_create_window_checked (conn,XCB_COPY_FROM_PARENT,key_win.window,scr->root,0,height-1,width,1,0,XCB_WINDOW_CLASS_INPUT_OUTPUT,scr->root_visual,XCB_CW_EVENT_MASK,values);
 
 	xcb_flush(conn);

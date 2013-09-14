@@ -28,7 +28,7 @@
 
 #define TWM_NAME "tabletwm"
 
-//#define DEBUG
+#define DEBUG
 
 #define CONFIG_FILE "tabletwm.cfg"
 #define BASE_CONFIG_DIR "/etc/tabletwm.d"

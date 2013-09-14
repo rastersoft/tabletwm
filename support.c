@@ -366,9 +366,20 @@ void support_launch_manager() {
 
 	int f;
 	
-	f=fork();
-	if (f==0) {
-		system(launcher_program);
-		exit(0);
+	uint32_t window;
+	uint32_t value;
+	
+	window=wincache_find_launcher_window();
+	
+	if (window==0) { // the launcher has not been launched yet; launch it
+		f=fork();
+		if (f==0) {
+			system(launcher_program);
+			exit(0);
+		}
+	} else { // the launcher has been launched. Show its window
+		value=XCB_STACK_MODE_ABOVE;
+		xcb_configure_window (conn,window, XCB_CONFIG_WINDOW_STACK_MODE, &value);
+		support_send_dock_up(NULL,NULL);
 	}
 }

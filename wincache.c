@@ -130,12 +130,12 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	xcb_get_property_reply_t *wmclass;
 	xcb_get_property_reply_t *window_hints;
 	
-	transient_for_cookie   = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1);
-	window_type_cookie     = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
+	transient_for_cookie   = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1);
+	window_type_cookie     = xcb_get_property(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
 	wmclass_cookie         = xcb_icccm_get_wm_class_unchecked(conn,window);
-	normal_hints_cookie    = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,0,1);
-	size_hints_cookie      = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,5,4);
-	hints_cookie           = xcb_get_property_unchecked(conn,0,window,atoms[TWM_ATOM_WM_HINTS],XCB_ATOM_WM_HINTS,0,2);
+	normal_hints_cookie    = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,0,1);
+	size_hints_cookie      = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,5,4);
+	hints_cookie           = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_HINTS],XCB_ATOM_WM_HINTS,0,2);
 
 	xcb_flush(conn);
 	
@@ -167,6 +167,9 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 			element->class_name=strdup(wmclass_data.class_name);
 			element->instance=strdup(wmclass_data.instance_name);
 			xcb_icccm_get_wm_class_reply_wipe(&wmclass_data);
+#ifdef DEBUG
+			printf("Class name: %s; class instance name: %s\n",element->class_name,element->instance);
+#endif
 		} else {
 			element->class_name=NULL;
 			element->instance=NULL;
@@ -195,7 +198,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 				element->max_height=v2[3];
 #ifdef DEBUG
 				printf("sizes: %dx%d  %dx%d\n",element->min_width,element->min_height,element->max_width,element->max_height);
-#endif DEBUG
+#endif
 				if ((element->min_width!=0)&&(element->min_height!=0)&&(element->max_width!=0)&&(element->max_height!=0)&&
 					(element->min_height==element->max_height)&&(element->min_width==element->max_width)) {
 #ifdef DEBUG
@@ -224,3 +227,28 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	return (element);
 }
 
+uint32_t wincache_find_launcher_window() {
+
+	char *p,*q,*final;
+	struct wincache_element *element;
+	
+	p=q=launcher_program;
+	for(;*p;p++) {
+		if(*p=='/') {
+			q=p+1;
+		}
+	}
+	final=strdup(q);
+	for(p=q;*p;p++) {
+		if(*p==' ') {
+			*p=0;
+			break;
+		}
+	}
+	for(element=&wincache_list;element!=NULL;element=element->next) {
+		if((element->instance!=NULL)&&(0==strcmp(element->instance,final))) {
+			return element->window;
+		}
+	}
+	return 0;
+}

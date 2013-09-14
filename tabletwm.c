@@ -101,7 +101,7 @@ int main() {
 				case(XCB_MAP_NOTIFY):
 				case(XCB_MAPPING_NOTIFY):
 				case(XCB_CONFIGURE_NOTIFY):
-					action_map_notify(e);
+					support_send_dock_up(NULL,NULL); // ensure that the dock is always on top
 				break;
 				case(XCB_CONFIGURE_REQUEST):
 					action_configure_request(e);

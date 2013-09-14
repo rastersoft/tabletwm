@@ -88,11 +88,6 @@ void action_destroy_notify(xcb_generic_event_t *e) {
 	wincache_destroy_element(ee->window);
 }
 
-void action_map_notify(xcb_generic_event_t *e) {
-
-
-}
-
 void action_map_request(xcb_generic_event_t *e) {
 
 	struct wincache_element *element;
@@ -288,6 +283,7 @@ void action_key(xcb_generic_event_t *e) {
 		} else {
 			key_win.has_keyboard&=2; // disable keyboard, but keep it where it was before
 		}
+		support_send_dock_up(NULL,NULL);
 		menuwin_set_window();
 	}
 
@@ -296,6 +292,7 @@ void action_key(xcb_generic_event_t *e) {
 		key_win.has_keyboard&=2; // disable keyboard, but remember where it was before
 		key_win.possition=1-key_win.possition; // enable/disable the menu
 		key_win.enabled_by_mouse=0;
+		support_send_dock_up(NULL,NULL);
 		menuwin_set_window();
 	}
 

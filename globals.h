@@ -84,15 +84,15 @@ enum TWM_ATOM_DEFS {
 
 struct support_new_size {
 
-	uint8_t force_change;
-	uint8_t new_x; // x variable contains a value
-	uint8_t new_y; // y variable contains a value
-	uint8_t new_w; // w variable contains a value
-	uint8_t new_h; // h variable contains a value
 	int32_t x;
 	int32_t y;
 	int32_t w;
 	int32_t h;
+	uint8_t new_x; // x variable contains a value
+	uint8_t new_y; // y variable contains a value
+	uint8_t new_w; // w variable contains a value
+	uint8_t new_h; // h variable contains a value
+	uint8_t force_change;
 };
 
 struct wincache_element {
@@ -104,17 +104,17 @@ struct wincache_element {
 	char    *instance;
 	uint32_t window;
 	uint32_t type;
+	uint32_t min_width;
+	uint32_t min_height;
+	uint32_t max_width;
+	uint32_t max_height;
 	uint8_t  filled;
 	uint8_t  mapped;
 	uint8_t  resizable;
 	uint8_t  is_transient;
 	uint8_t  input_flag;
-	uint32_t min_width;
-	uint32_t min_height;
-	uint32_t max_width;
-	uint32_t max_height;
-	char     asked_for_new_size;
-	struct support_new_size new_size;
+	uint8_t  asked_for_new_size;
+	struct   support_new_size new_size;
 };
 
 extern struct wincache_element wincache_list;
@@ -134,6 +134,7 @@ struct key_win_s {
 	uint8_t possition; // 0: minimized; 1: expanded
 	uint8_t has_keyboard; // 0: no keyboard bottom; 1: no keyboard top; 2: keyboard bottom; 3: keyboard top
 	uint8_t enabled_by_mouse;
+	uint8_t mouse_grabed;
 	uint32_t width;
 	uint32_t height;
 	cairo_surface_t *surface;

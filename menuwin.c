@@ -716,6 +716,32 @@ void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b)
 	cairo_scale(key_win.cr,scale,scale);
 }
 
+void menuwin_grab_mouse() {
+
+	if (key_win.mouse_grabed==0) {
+		uint16_t mask=XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_LEAVE_WINDOW;
+		xcb_grab_pointer_cookie_t grab_cookie;
+		xcb_grab_pointer_reply_t *grab_reply;
+
+		grab_cookie=xcb_grab_pointer(conn,1,key_win.window,mask,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_WINDOW_NONE,XCB_CURSOR_NONE,XCB_CURRENT_TIME);
+		xcb_flush(conn);
+		grab_reply=xcb_grab_pointer_reply(conn,grab_cookie,0);
+		if (grab_reply->status==0) {
+			key_win.mouse_grabed=1;
+		}
+		free(grab_reply);
+	}
+}
+
+void menuwin_ungrab_mouse() {
+
+	if (key_win.mouse_grabed==1) {
+		xcb_ungrab_pointer(conn,XCB_CURRENT_TIME);
+		xcb_flush(conn);
+		key_win.mouse_grabed=0;
+	}
+}
+
 void menuwin_set_window() {
 
 	uint32_t v[4];
@@ -724,6 +750,10 @@ void menuwin_set_window() {
 	value_mask=XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT;
 	if (key_win.possition==1) {
 		if (key_win.has_keyboard&0x01) { // keyboard enabled?
+			// Grab the mouse to avoid other windows to receive events
+
+			menuwin_grab_mouse();
+
 			v[2]=width;
 			v[3]=height/2;
 			if (key_win.has_keyboard&0x02) { // keyboard on top?
@@ -734,12 +764,14 @@ void menuwin_set_window() {
 				v[1]=height/2;
 			}
 		} else {
+			menuwin_ungrab_mouse();
 			v[0]=0;
 			v[1]=9*height/10;
 			v[2]=width;
 			v[3]=height/10;
 		}
 	} else {
+		menuwin_ungrab_mouse();
 		v[0]=0;
 		v[1]=height-1;
 		v[2]=width;

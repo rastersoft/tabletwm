@@ -320,7 +320,9 @@ void action_key(xcb_generic_event_t *e) {
 
 	// SHUTDOWN
 	if (((ee->detail==135)&&(!(ee->state&XCB_MOD_MASK_CONTROL))&&((ee->state&XCB_MOD_MASK_1)))||(ee->detail==124)) {
+		printf("Shutdown\n");
 		if(shutdown_win.cache->mapped==0) {
+			printf("Show shutdown\n");
 			shutdown_show();
 		}
 	}

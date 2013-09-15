@@ -277,6 +277,14 @@ void action_mouse_click(xcb_generic_event_t *e) {
 void action_key(xcb_generic_event_t *e) {
 
 	xcb_key_press_event_t *ee=(xcb_key_press_event_t *)e;
+#ifdef DEBUG	
+	printf("Key capture: %d %X\n",ee->detail,ee->state);
+	if (ee->detail==124) {
+		printf("Shutdown2\n");
+	} else {
+		printf("No shutdown %d\n",ee->detail);
+	}
+#endif
 	
 	// Alt+F4
 	if ((ee->detail==70)&&(ee->state&XCB_MOD_MASK_1)) {
@@ -319,11 +327,6 @@ void action_key(xcb_generic_event_t *e) {
 	}
 
 	// SHUTDOWN
-	if (ee->detail==124) {
-		printf("Shutdown2\n");
-	} else {
-		printf("No shutdown %d\n",ee->detail);
-	}
 	if ((ee->detail==124)||((ee->detail==135)&&(!(ee->state&XCB_MOD_MASK_CONTROL))&&((ee->state&XCB_MOD_MASK_1)))) {
 		printf("Shutdown\n");
 		if(shutdown_win.cache->mapped==0) {
@@ -339,6 +342,5 @@ void action_key(xcb_generic_event_t *e) {
 		return;
 	}
 
-	printf("Key capture: %d %X\n",ee->detail,ee->state);
 #endif
 }

@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.11
+Version 0.12
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
@@ -28,7 +28,7 @@ Pressing the MENU key (the one at the right, between WINDOWS and CTRL) will expa
 
 By pressing Ctrl+MENU, both the options bar and a virtual keyboard will be expanded. A new icon will be available in the options bar, that allows to move the keyboard to the top or bottom part of the screen. This is useful when using the GSL1680 user-space driver, because it generates this keypress when touching with three fingers.
 
-Pressing Alt+MENU (or the power button), TabletWM will ask to power down the device. It uses DBus and ConsoleKit to be able to shut down it without needing root priviledges.
+Pressing Alt+MENU (or the power button), TabletWM will ask to power down the device. It calls **/sbin/halt**, so you must first give it SUID priviledges with **sudo chmod 4755 /sbin/halt**.
 
 Is important to remember that TabletWM grabs the mouse when the on-screen keyboard is visible. This is a must to avoid problems with popups and other kind of windows. This means that, if you have the on-screen keyboard visible and want to do a click in the screen, you must hide the keyboard first.
 

@@ -189,7 +189,7 @@ void shutdown_press(uint16_t x,uint16_t y) {
 	if (x<(width/4)) {
 		shutdown_hide();
 	} else {
-		system("dbus-send --system --print-reply --dest=\"org.freedesktop.ConsoleKit\" /org/freedesktop/ConsoleKit/Manager org.freedesktop.ConsoleKit.Manager.Stop");
+		system("/sbin/halt");
 	}
 
 }

@@ -51,6 +51,7 @@ int main() {
 	support_capture_key(XCB_MOD_MASK_1,23); // Alt+TAB
 	support_capture_key(XCB_MOD_MASK_1,70); // Alt+F4
 	support_capture_key(XCB_MOD_MASK_ANY,135); // MENU key (between the right WINDOWS key and the right Ctrl key)
+	support_capture_key(XCB_MOD_MASK_ANY,124); // POWER key
 	//xcb_grab_key(conn,0,scr->root,XCB_MOD_MASK_ANY,XCB_GRAB_ANY,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC);
 
 #ifdef DEBUG

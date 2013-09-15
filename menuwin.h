@@ -17,13 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef M_PI
-#define M_PI           3.1415926536
-#define M_PI2          1.570796327
-#define M_PI32         4.71238898
-#define M_PI42         6.283185307
-#endif
-
 #ifndef _H_MENUWIN_
 #define _H_MENUWIN_
 
@@ -48,7 +41,7 @@
 void menuwin_init();
 void menuwin_set_window();
 void menuwin_expose(xcb_expose_event_t *ee);
-void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b);
+void menuwin_paint_button(cairo_t *cr,int x, int y, int w, int h, float r, float g, float b);
 void menuwin_press_key_at(int x, int y);
 uint32_t init_utf8_to_keysym(unsigned char *data);
 void destroy_keycodes();

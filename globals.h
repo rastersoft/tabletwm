@@ -154,12 +154,20 @@ struct key_element {
 	float size;
 };
 
+#ifndef M_PI
+#define M_PI           3.1415926536
+#define M_PI2          1.570796327
+#define M_PI32         4.71238898
+#define M_PI42         6.283185307
+#endif
+
 extern int keyboard_blocks;
 extern int keyboard_current_block;
 
 extern struct key_element *keyboard_lowercase;
 
 extern struct key_win_s key_win;
+extern struct key_win_s shutdown_win;
 extern char keep_running;
 
 extern char lang_xkbmap[];

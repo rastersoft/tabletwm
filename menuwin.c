@@ -399,7 +399,7 @@ void menuwin_init() {
 
 void menuwin_paint_close_button() {
 
-	menuwin_paint_button(0,0,1,1,1.0,0.1,0.1);
+	menuwin_paint_button(key_win.cr,0,0,1,1,1.0,0.1,0.1);
 	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_move_to(key_win.cr,-0.8,-0.8);
@@ -413,7 +413,7 @@ void menuwin_paint_close_button() {
 
 void menuwin_paint_swap_button() {
 
-	menuwin_paint_button(5,0,1,1,1.0,1.0,1.0);
+	menuwin_paint_button(key_win.cr,5,0,1,1,1.0,1.0,1.0);
 	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_move_to(key_win.cr,-0.8,-0.2);
@@ -432,7 +432,7 @@ void menuwin_paint_swap_button() {
 
 void menuwin_paint_change_app_button() {
 
-	menuwin_paint_button(6,0,2,1,1.0,1.0,1.0);
+	menuwin_paint_button(key_win.cr,6,0,2,1,1.0,1.0,1.0);
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
 	cairo_rectangle(key_win.cr,-1.0,-0.8,-1.2,1.6);
@@ -493,7 +493,7 @@ void menuwin_paint_change_app_button() {
 
 void menuwin_paint_change_window_button() {
 
-	menuwin_paint_button(8,0,2,1,1.0,1.0,1.0);
+	menuwin_paint_button(key_win.cr,8,0,2,1,1.0,1.0,1.0);
 	
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
@@ -514,7 +514,7 @@ void menuwin_paint_change_window_button() {
 
 void menuwin_paint_launcher() {
 
-	menuwin_paint_button(10,0,2,1,0.1,1.0,0.2);
+	menuwin_paint_button(key_win.cr,10,0,2,1,0.1,1.0,0.2);
 	cairo_set_line_width(key_win.cr,0.12);
 	cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
 	cairo_arc(key_win.cr,0.0,0.0,0.8,0,M_PI42);
@@ -542,7 +542,7 @@ void menuwin_paint_keyboard() {
 	for(y=4;y>0;y--) {
 		for(x=0;x<KEYS_PER_ROW;x++) {
 			if (keyboard_lowercase[counter].type!=KEY_BLANK) {
-				menuwin_paint_button(x,y,keyboard_lowercase[counter].w,keyboard_lowercase[counter].h,0.9,0.9,0.9);
+				menuwin_paint_button(key_win.cr,x,y,keyboard_lowercase[counter].w,keyboard_lowercase[counter].h,0.9,0.9,0.9);
 				cairo_set_line_width(key_win.cr,0.12);
 				cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
 				switch(keyboard_lowercase[counter].type) {
@@ -684,7 +684,7 @@ void menuwin_paint_buttons() {
 	menuwin_paint_launcher();
 }
 
-void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b) {
+void menuwin_paint_button(cairo_t *cr,int x, int y, int w, int h, float r, float g, float b) {
 
 	// coordinates and size are in width/10 and height/10 units
 	// 0,0 is bottom-left
@@ -695,16 +695,16 @@ void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b)
 	h=(h*height)/10;
 	float scale;
 	
-	cairo_set_source_rgb(key_win.cr,r,g,b);
-	cairo_move_to(key_win.cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
-	cairo_arc(key_win.cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
-	cairo_arc(key_win.cr,x+w-BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,0,M_PI2);
-	cairo_arc(key_win.cr,x+BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI2,M_PI);
-	cairo_arc(key_win.cr,x+BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI,M_PI32);
-	cairo_fill(key_win.cr);
+	cairo_set_source_rgb(cr,r,g,b);
+	cairo_move_to(cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
+	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
+	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,0,M_PI2);
+	cairo_arc(cr,x+BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI2,M_PI);
+	cairo_arc(cr,x+BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI,M_PI32);
+	cairo_fill(cr);
 
-	cairo_save(key_win.cr);
-	cairo_translate(key_win.cr,x+w/2,y+h/2);
+	cairo_save(cr);
+	cairo_translate(cr,x+w/2,y+h/2);
 	w=(width)/KEYS_PER_ROW;
 	h=(height)/10;
 	if (w>h) {
@@ -713,7 +713,7 @@ void menuwin_paint_button(int x, int y, int w, int h, float r, float g, float b)
 		scale=(float)w;
 	}
 	scale/=2.0;
-	cairo_scale(key_win.cr,scale,scale);
+	cairo_scale(cr,scale,scale);
 }
 
 void menuwin_grab_mouse() {

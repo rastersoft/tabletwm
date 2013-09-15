@@ -144,6 +144,22 @@ void action_map_request(xcb_generic_event_t *e) {
 	support_send_dock_up(NULL,NULL);
 }
 
+void action_configure_notify(xcb_generic_event_t *e) {
+
+	struct wincache_element *element;
+
+	xcb_configure_notify_event_t *ee=(xcb_configure_notify_event_t *)e;
+
+#ifdef DEBUG
+	printf("Configure notify %d\n",ee->window);
+#endif
+
+	element=wincache_fill_element(ee->window);
+	if ((element)&&(element->type!=atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+		support_send_dock_up(NULL,NULL); // after a configure notify for a non-dock window, ensure that the docks are always on top
+	}
+}
+
 void action_configure_request(xcb_generic_event_t *e) {
 
 	xcb_configure_request_event_t *ee=(xcb_configure_request_event_t *)e;
@@ -216,6 +232,8 @@ void action_expose(xcb_generic_event_t *e) {
 	xcb_expose_event_t *ee=(xcb_expose_event_t *)e;
 	if (ee->window==key_win.window) {
 		menuwin_expose(ee);
+	} else if (ee->window==shutdown_win.window) {
+		shutdown_expose();
 	}
 }
 
@@ -245,11 +263,15 @@ void action_mouse_click(xcb_generic_event_t *e) {
 
 	struct xcb_button_press_event_t *ee=(struct xcb_button_press_event_t *)e;
 	
-	int x=(ee->event_x*KEYS_PER_ROW)/width;
-	int y=((key_win.height-ee->event_y)*10)/height;
+	if (ee->event==key_win.window) {
+		int x=(ee->event_x*KEYS_PER_ROW)/width;
+		int y=((key_win.height-ee->event_y)*10)/height;
 	
-	menuwin_press_key_at(x,y);
-
+		menuwin_press_key_at(x,y);
+	}
+	if (ee->event==shutdown_win.window) {
+		shutdown_press(ee->event_x,ee->event_y);
+	}
 }
 
 void action_key(xcb_generic_event_t *e) {
@@ -275,7 +297,7 @@ void action_key(xcb_generic_event_t *e) {
 	}
 
 	// MENU with keyboard
-	if ((ee->detail==135)&&(ee->state&XCB_MOD_MASK_CONTROL)) {	
+	if ((ee->detail==135)&&(ee->state&XCB_MOD_MASK_CONTROL)&&(!(ee->state&XCB_MOD_MASK_1))) {
 		key_win.enabled_by_mouse=0;
 		key_win.possition=1-key_win.possition; // enable/disable the menu
 		if (key_win.possition) {
@@ -294,6 +316,15 @@ void action_key(xcb_generic_event_t *e) {
 		key_win.enabled_by_mouse=0;
 		support_send_dock_up(NULL,NULL);
 		menuwin_set_window();
+	}
+
+	// SHUTDOWN
+	if ((ee->detail==135)&&(!(ee->state&XCB_MOD_MASK_CONTROL))&&((ee->state&XCB_MOD_MASK_1))) {
+		if(shutdown_win.cache->mapped==1) {
+			shutdown_hide();
+		} else {
+			shutdown_show();
+		}
 	}
 
 #ifdef DEBUG

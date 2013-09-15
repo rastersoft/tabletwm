@@ -185,6 +185,10 @@ void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
 
 	uint32_t value;
 
+#ifdef DEBUG
+	printf("Sending DOCK windows up\n");
+#endif
+
 	if (r2==NULL) {
 		r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
 		wp=xcb_query_tree_children(r);
@@ -201,7 +205,7 @@ void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
 		}
 		if ((element->mapped)&&(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
 			value=XCB_STACK_MODE_ABOVE;
-			xcb_configure_window (conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, &value);
+			xcb_configure_window(conn,element->window,XCB_CONFIG_WINDOW_STACK_MODE,&value);
 		}
 	}
 	xcb_flush(conn);

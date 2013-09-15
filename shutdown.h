@@ -17,14 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef _H_INIT_
-#define _H_INIT_
+#ifndef _H_SHUTDOWN_
+#define _H_SHUTDOWN_
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
+#include <xcb/xcb_keysyms.h>
+#include <xcb/xtest.h>
+#include <cairo/cairo.h>
+#include <cairo/cairo-xcb.h>
 
-void init_tabletwm();
-void destroy_tabletwm();
-void init_load_config();
+#include "menuwin.h"
 
-#endif //_H_INIT_
+void shutdown_init();
+void shutdown_destroy();
+void shutdown_show();
+void shutdown_hide();
+void shutdown_expose();
+void shutdown_press(uint16_t x,uint16_t y);
+
+#endif // _H_SHUTDOWN_

@@ -100,8 +100,10 @@ int main() {
 				break;
 				case(XCB_MAP_NOTIFY):
 				case(XCB_MAPPING_NOTIFY):
-				case(XCB_CONFIGURE_NOTIFY):
 					support_send_dock_up(NULL,NULL); // ensure that the dock is always on top
+				break;
+				case(XCB_CONFIGURE_NOTIFY):
+					action_configure_notify(e);
 				break;
 				case(XCB_CONFIGURE_REQUEST):
 					action_configure_request(e);
@@ -133,10 +135,7 @@ int main() {
 		}
 		free(e);
 	}
-	wincache_destroy_element(key_win.window);
-	destroy_keycodes();
-	xcb_destroy_window(conn,key_win.window);
-	xcb_flush(conn);
+	destroy_tabletwm();
 	xcb_disconnect(conn);
 	return(0);
 }

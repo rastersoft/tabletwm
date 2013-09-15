@@ -33,6 +33,7 @@ xcb_screen_t *scr;
 xcb_visualtype_t *visual_type;
 
 struct key_win_s key_win;
+struct key_win_s shutdown_win;
 
 struct key_element *keyboard_lowercase;
 int keyboard_blocks;

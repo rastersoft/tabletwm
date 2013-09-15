@@ -25,6 +25,7 @@
 #include "globals.h"
 #include "init.h"
 #include "wincache.h"
+#include "shutdown.h"
 
 void init_load_config() {
 
@@ -222,5 +223,16 @@ void init_tabletwm() {
 	} else {
 		menuwin_init();
 	}
+	shutdown_init();
 }
 
+void destroy_tabletwm() {
+
+	shutdown_destroy();
+
+	wincache_destroy_element(key_win.window);
+	destroy_keycodes();
+	xcb_destroy_window(conn,key_win.window);
+	xcb_flush(conn);
+
+}

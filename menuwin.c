@@ -374,7 +374,7 @@ uint32_t init_utf8_to_keysym(unsigned char *data) {
 
 void menuwin_init() {
 
-	key_win.surface=cairo_xcb_surface_create(conn,key_win.window,visual_type,width,10);
+	key_win.surface=cairo_xcb_surface_create(conn,key_win.window,visual_type,width,1);
 
 	// Set the _NET_SUPPORTING_WM_CHECK property pointing to the window ID in both the root and fake windows
 	// Also set the WM_NAME property in both windows to TWM_NAME

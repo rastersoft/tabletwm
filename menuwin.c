@@ -686,13 +686,13 @@ void menuwin_paint_buttons() {
 
 void menuwin_paint_button(cairo_t *cr,int x, int y, int w, int h, float r, float g, float b) {
 
-	// coordinates and size are in width/10 and height/10 units
+	// coordinates and size are in width/KEYS_H_DIVISOR and height/KEYS_H_DIVISOR units
 	// 0,0 is bottom-left
 	
 	x=(x*width)/KEYS_PER_ROW;
-	y=key_win.height-(((y+1)*height)/10);
+	y=key_win.height-(((y+1)*height)/KEYS_H_DIVISOR);
 	w=(w*width)/KEYS_PER_ROW;
-	h=(h*height)/10;
+	h=(h*height)/KEYS_H_DIVISOR;
 	float scale;
 	
 	cairo_set_source_rgb(cr,r,g,b);
@@ -706,7 +706,7 @@ void menuwin_paint_button(cairo_t *cr,int x, int y, int w, int h, float r, float
 	cairo_save(cr);
 	cairo_translate(cr,x+w/2,y+h/2);
 	w=(width)/KEYS_PER_ROW;
-	h=(height)/10;
+	h=(height)/KEYS_H_DIVISOR;
 	if (w>h) {
 		scale=(float)h;
 	} else {
@@ -755,20 +755,20 @@ void menuwin_set_window() {
 			menuwin_grab_mouse();
 
 			v[2]=width;
-			v[3]=height/2;
+			v[3]=5*height/KEYS_H_DIVISOR;
 			if (key_win.has_keyboard&0x02) { // keyboard on top?
 				v[0]=0;
 				v[1]=0;
 			} else {
 				v[0]=0;
-				v[1]=height/2;
+				v[1]=(KEYS_H_DIVISOR-5)*height/KEYS_H_DIVISOR;
 			}
 		} else {
 			menuwin_ungrab_mouse();
 			v[0]=0;
-			v[1]=9*height/10;
+			v[1]=(KEYS_H_DIVISOR-1)*height/KEYS_H_DIVISOR;
 			v[2]=width;
-			v[3]=height/10;
+			v[3]=height/KEYS_H_DIVISOR;
 		}
 	} else {
 		menuwin_ungrab_mouse();
@@ -785,6 +785,9 @@ void menuwin_set_window() {
 }
 
 void menuwin_press_key_at(int x, int y) {
+
+	x=(x*KEYS_PER_ROW)/width;
+	y=((key_win.height-y)*KEYS_H_DIVISOR)/height;
 
 	if (y==0) { // main buttons row
 		switch(x) {

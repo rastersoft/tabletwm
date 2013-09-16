@@ -264,10 +264,7 @@ void action_mouse_click(xcb_generic_event_t *e) {
 	struct xcb_button_press_event_t *ee=(struct xcb_button_press_event_t *)e;
 	
 	if (ee->event==key_win.window) {
-		int x=(ee->event_x*KEYS_PER_ROW)/width;
-		int y=((key_win.height-ee->event_y)*10)/height;
-	
-		menuwin_press_key_at(x,y);
+		menuwin_press_key_at(ee->event_x,ee->event_y);
 	}
 	if (ee->event==shutdown_win.window) {
 		shutdown_press(ee->event_x,ee->event_y);

@@ -37,6 +37,7 @@
 #define KEYS_FONT_SIZE 1.2
 #define KEYS_JUMP_FONT_SIZE 0.8
 #define KEYS_TEXT_FONT_SIZE 0.8
+#define KEYS_H_DIVISOR 12
 
 void menuwin_init();
 void menuwin_set_window();

@@ -41,7 +41,7 @@ int main() {
 
 	uint8_t xrandr;
 
-	printf("TabletWM version 0.13\n");
+	printf("TabletWM version 0.15\n");
 
 	init_tabletwm();
 
@@ -73,6 +73,7 @@ int main() {
 	
 	keep_running=1;
 	
+	support_launch_manager();
 	while((keep_running)&&(e=xcb_wait_for_event(conn))) {
 		uint8_t r=e->response_type&~0x80;
 		

@@ -100,6 +100,7 @@ and an *init.d* will be installed that will launch TabletWM automatically during
 ## Known bugs
 
 * Windows existing before launching TabletWM are not recognized by it.
+* Sometimes the app seem to be locked. Just using the *shows the next window of the same application group* button (or Ctrl+TAB) fixes it. It seems to have to do when the app really needs a window bigger than the screen.
 
 
 ## License

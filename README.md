@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.15
+Version 0.16
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
@@ -79,6 +79,23 @@ The W and H parameters specify the width and the height of the key. The default 
 The name of the file must be *XXXXXX.keymap*, being *XXXXXX* the text that the user must put in the *onscreen_keyboard_map* entry in the configuration file.
 
 If TabletWM is unable to map a character to a keycode, that key will be shown in red color.
+
+
+## Compiling from source code and installing system-wide
+
+TabletWM needs XCB, Cairo and XKBCommon libraries.
+
+Just run as a normal user
+
+	make
+	sudo make install
+
+in your device, and will compile and install the window manager. You can also type
+
+	sudo make install-init
+
+and an *init.d* will be installed that will launch TabletWM automatically during startup using the *debian* user. This, of course, only works for Debian systems with a user called *debian*. It also will install a *.xinitrc* file at */home/debian* that will launch the *dbus user session*, and the *ConsoleKit* daemon.
+
 
 ## Known bugs
 

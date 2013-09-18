@@ -39,5 +39,13 @@ install:
 	install tabletwm.cfg.example /etc/tabletwm.d/
 	install *.keymap /etc/tabletwm.d/
 
+install-init:
+	install tabletwm.init /etc/init.d/tabletwm
+	install -d /home/debian
+	install xinitrc /home/debian/.xinitrc
+	chmod 755 /etc/init.d/tabletwm
+	chmod 755 /home/debian/.xinitrc
+	update-rc.d tabletwm defaults
+
 uninstall:
 	rm -rf /usr/local/bin/tabletwm

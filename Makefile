@@ -2,6 +2,10 @@ CC=gcc -c
 LN=gcc
 CFLAGS= -O2
 
+PREFIX=/usr/local
+BINDIR=$(PREFIX)/bin
+DESTDIR=
+
 tabletwm: tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o shutdown.o
 	$(LN) -o tabletwm tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o shutdown.o `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm xcb-keysyms xcb-xtest cairo xkbcommon`
 	strip tabletwm
@@ -34,18 +38,18 @@ clean:
 	rm -f *.o tabletwm
 
 install:
-	install -d /etc/tabletwm.d
-	install tabletwm /usr/local/bin
-	install tabletwm.cfg.example /etc/tabletwm.d/
-	install *.keymap /etc/tabletwm.d/
+	install -d $(DESTDIR)$(BINDIR)
+	install -d $(DESTDIR)/etc/tabletwm.d
+	install -m 755 tabletwm $(DESTDIR)$(BINDIR)
+	install tabletwm.cfg.example $(DESTDIR)/etc/tabletwm.d/
+	install *.keymap $(DESTDIR)/etc/tabletwm.d/
 
 install-init:
-	install tabletwm.init /etc/init.d/tabletwm
-	install -d /home/debian
-	install xinitrc /home/debian/.xinitrc
-	chmod 755 /etc/init.d/tabletwm
-	chmod 755 /home/debian/.xinitrc
+	install -d $(DESTDIR)/etc/init.d
+	install -d $(DESTDIR)/home/debian
+	install -m 755 tabletwm.init $(DESTDIR)/etc/init.d/tabletwm
+	install xinitrc $(DESTDIR)/home/debian/.xinitrc
 	update-rc.d tabletwm defaults
 
 uninstall:
-	rm -rf /usr/local/bin/tabletwm
+	rm -rf $(DESTDIR)$(BINDIR)/tabletwm

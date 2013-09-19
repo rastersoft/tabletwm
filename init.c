@@ -231,7 +231,6 @@ void init_tabletwm() {
 			int counter=0;
 			int len,max;
 			max=xcb_get_property_value_length(kbd_info);
-			printf("Tamano: %d\n",max);
 			char *end=p+max;
 			do {
 				len = strnlen(p,max);

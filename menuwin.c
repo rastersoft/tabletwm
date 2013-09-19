@@ -213,6 +213,9 @@ void fill_keycodes() {
 			}
 			xkb_state_unref(state);
 		}
+		for(k=0;k<counter;k++) { // and now we check each desired key with the keysymbol obtained
+			printf("Texto: %s, Keysym: %d, mod: %d\n",keyboard_lowercase[k].g_element,keyboard_lowercase[k].keycode,keyboard_lowercase[k].modifier);
+		}
 
 		// Now assign new keysyms to keycodes not used, to allow other keysyms not available in US keyboards
 

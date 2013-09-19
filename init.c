@@ -133,6 +133,7 @@ void init_tabletwm() {
 		"WM_STATE",
 		"_NET_ACTIVE_WINDOW",
 		"WM_HINTS",
+		"_XKB_RULES_NAMES",
 	};
 
 	init_load_config();
@@ -212,11 +213,37 @@ void init_tabletwm() {
 	// This window contains the menu and the virtual keyboard (when showed)
 	// It is also used to ensure that the window manager is recognized as an Extended Window Manager Hints WM
 	// By default it occupies one pixel at the bottom of the screen, to allow to detect when the mouse is moved to the bottom
+
+	xcb_get_property_cookie_t kbd_info_cookie;
+	xcb_get_property_reply_t *kbd_info;
+	kbd_info_cookie = xcb_get_property(conn,0,scr->root,atoms[TWM__XKB_RULES_NAMES],XCB_ATOM_STRING,0,1024);
+
 	key_win.window = xcb_generate_id(conn);
 	uint32_t values[1] = {XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_ENTER_WINDOW|XCB_EVENT_MASK_LEAVE_WINDOW};
 	void_cookie=xcb_create_window_checked (conn,XCB_COPY_FROM_PARENT,key_win.window,scr->root,0,height-1,width,1,0,XCB_WINDOW_CLASS_INPUT_OUTPUT,scr->root_visual,XCB_CW_EVENT_MASK,values);
 
 	xcb_flush(conn);
+
+	kbd_info = xcb_get_property_reply(conn,kbd_info_cookie,0);
+	if (kbd_info!=NULL) {
+		if (kbd_info->length>0) {
+			char *p=((char *)(xcb_get_property_value(kbd_info)));
+			int counter=0;
+			int len,max;
+			max=xcb_get_property_value_length(kbd_info);
+			printf("Tamano: %d\n",max);
+			char *end=p+max;
+			do {
+				len = strnlen(p,max);
+				if (*p!=0) {
+					xkb_names[counter++]=strdup(p);
+				}
+				p+=len+1;
+				max-=len+1;
+			} while ((p < end) && (counter < 5));
+		}
+		free(kbd_info);
+	}
 
 	if (xcb_request_check(conn,void_cookie)) {
 		printf("Can't create the fake window\n");

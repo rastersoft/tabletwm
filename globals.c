@@ -42,3 +42,5 @@ int keyboard_current_block;
 char lang_xkbmap[32]={0};
 char lang_onscreen[32]={0};
 char launcher_program[256]={0};
+
+char *xkb_names[5]={NULL,NULL,NULL,NULL,NULL};

@@ -79,6 +79,8 @@ enum TWM_ATOM_DEFS {
 	TWM_ATOM__NET_ACTIVE_WINDOW,
 	
 	TWM_ATOM_WM_HINTS,
+	
+	TWM__XKB_RULES_NAMES,
 
 	TWM_ATOM_LAST_VALUE};
 
@@ -173,5 +175,7 @@ extern char keep_running;
 extern char lang_xkbmap[];
 extern char lang_onscreen[];
 extern char launcher_program[];
+
+extern char *xkb_names[5];
 
 #endif // _H_GLOBALS_

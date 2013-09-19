@@ -39,7 +39,7 @@ void fill_keycodes() {
 	const struct xkb_rule_names rules={
 		.rules=NULL,
 		.model=NULL,
-		.layout="us",
+		.layout="es",
 		.variant=NULL,
 		.options=NULL
 	};

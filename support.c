@@ -124,18 +124,18 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 #ifdef DEBUG
 		printf("Maximize always\n");
 #endif
-		if ((size->new_x==0)||((size->new_x==1)&&(size->x!=0))||(size->force_change==1)) {
+		if ((size->new_x==0)||((size->new_x==1)&&(size->x!=0))) {
 			size->new_x=1;
 			size->x=0;
 		}
-		if ((size->new_y==0)||((size->new_y==1)&&(size->y!=0))||(size->force_change==1)) {
+		if ((size->new_y==0)||((size->new_y==1)&&(size->y!=0))) {
 			size->new_y=1;
 			size->y=0;
 		}
 		size->new_w=1;
 		size->new_h=1;
-		size->w=(width >element->min_width ) ? width  : element->min_width;
-		size->h=(height>element->min_height) ? height : element->min_height;
+		size->w=width;//(width >element->min_width ) ? width  : element->min_width;
+		size->h=height;//(height>element->min_height) ? height : element->min_height;
 		element->cur_width=size->w;
 		element->cur_height=size->h;
 		size->force_change=1;

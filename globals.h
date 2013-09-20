@@ -110,13 +110,13 @@ struct wincache_element {
 	uint32_t min_height;
 	uint32_t max_width;
 	uint32_t max_height;
+	uint32_t cur_width;
+	uint32_t cur_height;
 	uint8_t  filled;
 	uint8_t  mapped;
 	uint8_t  resizable;
 	uint8_t  is_transient;
 	uint8_t  input_flag;
-	uint8_t  asked_for_new_size;
-	struct   support_new_size new_size;
 };
 
 extern struct wincache_element wincache_list;

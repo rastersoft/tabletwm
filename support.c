@@ -48,9 +48,16 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		return;
 	}
 	
+	if (element->mapped==0) {
+		if (size->new_w) {
+			element->cur_width=size->w;
+		}
+		if (size->new_h) {
+			element->cur_height=size->h;
+		}
+	}
+	
 	if ((element->filled==0)||(element->mapped==0)) {
-		element->asked_for_new_size=1;
-		memcpy(&element->new_size,size,sizeof(struct support_new_size));
 		return;
 	}
 
@@ -91,19 +98,24 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 			int nx,ny;
 			if (size->new_w) {
 				nx=(width-size->w)/2;
-				if ((size->new_x==0)||(size->x!=nx)) {
-					size->new_x=1;
-					size->x=nx;
-					size->force_change=1;
-				}
+			} else {
+				nx=(width-element->cur_width)/2;
 			}
+			if ((size->new_x==0)||(size->x!=nx)) {
+				size->new_x=1;
+				size->x=nx;
+				size->force_change=1;
+			}
+			
 			if (size->new_h) {
 				ny=(height-size->h)/2;
-				if ((size->new_y==0)||(size->y!=ny)) {
-					size->new_y=1;
-					size->y=ny;
-					size->force_change=1;
-				}
+			} else {
+				ny=(height-element->cur_height)/2;
+			}
+			if ((size->new_y==0)||(size->y!=ny)) {
+				size->new_y=1;
+				size->y=ny;
+				size->force_change=1;
 			}
 			break;
 		}
@@ -124,42 +136,52 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		size->new_h=1;
 		size->w=(width >element->min_width ) ? width  : element->min_width;
 		size->h=(height>element->min_height) ? height : element->min_height;
+		element->cur_width=size->w;
+		element->cur_height=size->h;
 		size->force_change=1;
 	break;
 	case 2:
 #ifdef DEBUG
 		printf("Reduce if bigger; center if not\n");
 #endif
-		if (size->new_w) {
-			if (size->w>width) { // if size is bigger than the screen, resize to the screen
+		if (!size->new_w) {
+			size->w=element->cur_width;
+		}
+		
+		if (size->w>width) { // if size is bigger than the screen, resize to the screen
+			size->new_x=1;
+			size->x=0;
+			size->w=width;
+			element->cur_width=width;
+			size->force_change=1;
+		} else { // if size is smaller, center in the screen
+			int nx;
+			nx=(width-size->w)/2;
+			element->cur_width=size->w;
+			if ((size->new_x==0)||(size->x!=nx)) {
 				size->new_x=1;
-				size->x=0;
-				size->w=width;
+				size->x=nx;
 				size->force_change=1;
-			} else { // if size is smaller, center in the screen
-				int nx;
-				nx=(width-size->w)/2;
-				if ((size->new_x==0)||(size->x!=nx)) {
-					size->new_x=1;
-					size->x=nx;
-					size->force_change=1;
-				}
 			}
 		}
-		if (size->new_h) {
-			if (size->h>height) {
+
+		if (!size->new_h) {
+			size->h=element->cur_height;
+		}
+		if (size->h>height) {
+			size->new_y=1;
+			size->y=0;
+			size->h=height;
+			element->cur_height=height;
+			size->force_change=1;
+		} else {
+			int ny;
+			ny=(height-size->h)/2;
+			element->cur_height=size->h;
+			if ((size->new_y==0)||(size->y!=ny)) {
 				size->new_y=1;
-				size->y=0;
-				size->h=height;
+				size->y=ny;
 				size->force_change=1;
-			} else {
-				int ny;
-				ny=(height-size->h)/2;
-				if ((size->new_y==0)||(size->y!=ny)) {
-					size->new_y=1;
-					size->y=ny;
-					size->force_change=1;
-				}
 			}
 		}
 	break;

@@ -41,7 +41,8 @@ void wincache_init_element(struct wincache_element *element) {
 	element->min_height=0;
 	element->max_width=0;
 	element->max_height=0;
-	element->asked_for_new_size=0;
+	element->cur_width=0;
+	element->cur_height=0;
 }
 
 void wincache_init() {
@@ -122,6 +123,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	xcb_get_property_cookie_t size_hints_cookie;
 	xcb_get_property_cookie_t wmclass_cookie;
 	xcb_get_property_cookie_t hints_cookie;
+	xcb_get_geometry_cookie_t geometry_cookie;
 
 	xcb_get_property_reply_t *window_type;
 	xcb_get_property_reply_t *transient_for;
@@ -129,6 +131,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	xcb_get_property_reply_t *size_hints;
 	xcb_get_property_reply_t *wmclass;
 	xcb_get_property_reply_t *window_hints;
+	xcb_get_geometry_reply_t *geometry;
 	
 	transient_for_cookie   = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1);
 	window_type_cookie     = xcb_get_property(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
@@ -136,6 +139,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	normal_hints_cookie    = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,0,1);
 	size_hints_cookie      = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_NORMAL_HINTS],XCB_ATOM_WM_SIZE_HINTS,5,4);
 	hints_cookie           = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_HINTS],XCB_ATOM_WM_HINTS,0,2);
+	geometry_cookie        = xcb_get_geometry(conn,window);
 
 	xcb_flush(conn);
 	
@@ -222,6 +226,13 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 		}
 	}
 	free(window_hints);
+
+	geometry=xcb_get_geometry_reply(conn,geometry_cookie,0);
+	if (geometry!=NULL) {
+		element->cur_width =geometry->width;
+		element->cur_height=geometry->height;
+		free(geometry);
+	}
 
 	element->filled=1;
 	return (element);

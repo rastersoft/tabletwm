@@ -107,12 +107,7 @@ void action_map_request(xcb_generic_event_t *e) {
 	xcb_flush(conn);
 
 	struct support_new_size sizes;
-	if (element->asked_for_new_size==1) {
-		memcpy(&sizes,&element->new_size,sizeof(struct support_new_size));
-		element->asked_for_new_size=0;
-	} else {
-		memset(&sizes,0,sizeof(struct support_new_size));
-	}
+	memset(&sizes,0,sizeof(struct support_new_size));
 
 	support_calculate_new_size(ee->window,&sizes);
 
@@ -178,19 +173,27 @@ void action_configure_request(xcb_generic_event_t *e) {
 	if (ee->value_mask&XCB_CONFIG_WINDOW_X) {
 		sizes.new_x=1;
 		sizes.x=ee->x;
+		v[i++]=ee->x;
 	}
 	if (ee->value_mask&XCB_CONFIG_WINDOW_Y) {
 		sizes.new_y=1;
 		sizes.y=ee->y;
+		v[i++]=ee->y;
 	}
 	if (ee->value_mask&XCB_CONFIG_WINDOW_WIDTH) {
 		sizes.new_w=1;
 		sizes.w=ee->width;
+		v[i++]=ee->width;
 	}
 	if (ee->value_mask&XCB_CONFIG_WINDOW_HEIGHT) {
 		sizes.new_h=1;
 		sizes.h=ee->height;
+		v[i++]=ee->height;
 	}
+
+	// first, configure the window with the desired values, to ensure that the app will reveive a CONFIGURE_NOTIFICATION
+	xcb_configure_window(conn,ee->window,ee->value_mask,v);
+	xcb_flush(conn);
 	
 	support_calculate_new_size(ee->window,&sizes);
 
@@ -220,6 +223,8 @@ void action_configure_request(xcb_generic_event_t *e) {
 	if (ee->value_mask&XCB_CONFIG_WINDOW_STACK_MODE) {
 		v[i]=ee->stack_mode;
 	}
+
+	// And now, configure the window with the values that we want
 	xcb_configure_window(conn,ee->window,ee->value_mask,v);
 	xcb_flush(conn);
 	if (ee->value_mask&XCB_CONFIG_WINDOW_STACK_MODE) {

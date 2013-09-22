@@ -29,8 +29,8 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
 #include <xcb/randr.h>
-
-#include <signal.h>
+#include <poll.h>
+#include <sys/select.h>
 
 #include "globals.h"
 #include "init.h"
@@ -40,6 +40,15 @@
 int main() {
 
 	uint8_t xrandr;
+	struct pollfd poll_fd;
+	fd_set set;
+	int fd;
+	int retval;
+	int timeout;
+
+	setlocale (LC_ALL, "");
+//	bindtextdomain (PACKAGE, LOCALEDIR);
+//	textdomain (PACKAGE);
 
 	printf("TabletWM version 0.18\n");
 
@@ -74,68 +83,79 @@ int main() {
 	keep_running=1;
 	
 	support_launch_manager();
-	while((keep_running)&&(e=xcb_wait_for_event(conn))) {
-		uint8_t r=e->response_type&~0x80;
-		
-		if (r>=xrandr) {
-			switch(r-xrandr) {
-				case(XCB_RANDR_SCREEN_CHANGE_NOTIFY):
-					action_xrandr_screen_change_notify(e);
-				break;
-			}
-		} else {
-			switch(r) {
-				case(XCB_KEY_RELEASE):
-					action_key(e);
-				break;
-				case (XCB_CREATE_NOTIFY):
-					//xcb_create_notify_event_t *ee=(xcb_create_notify_event_t *)e;
-				break;
-				case(XCB_UNMAP_NOTIFY):
-					action_unmap_notify(e);
-				break;
-				case(XCB_DESTROY_NOTIFY):
-					action_destroy_notify(e);
-				break;
-				case(XCB_MAP_REQUEST):
-					action_map_request(e);
-				break;
-				case(XCB_MAP_NOTIFY):
-				case(XCB_MAPPING_NOTIFY):
-					support_send_dock_up(NULL,NULL); // ensure that the dock is always on top
-				break;
-				case(XCB_CONFIGURE_NOTIFY):
-					action_configure_notify(e);
-				break;
-				case(XCB_CONFIGURE_REQUEST):
-					action_configure_request(e);
-				break;
-				case(XCB_CIRCULATE_REQUEST):
-					//xcb_circulate_request_event_t *ee=(xcb_circulate_request_event_t *)e;
-				break;
-				case(XCB_EXPOSE):
-					action_expose(e);
-				break;
-				case(XCB_ENTER_NOTIFY):
-					action_mouse_enter(e);
-				break;
-				case(XCB_LEAVE_NOTIFY):
-					action_mouse_leave(e);
-				break;
-				case(XCB_BUTTON_RELEASE):
-					action_mouse_click(e);
-				break;
-				case(0): {
-					xcb_generic_error_t *ee=(xcb_generic_error_t *)e;
-					printf("error event type %d\n",ee->error_code);
-				}
-				break;
-				default:
-					printf("unhandled event type %d\n",e->response_type);
-				break;
-			}
+	fd = xcb_get_file_descriptor(conn);
+	while(keep_running) {
+		poll_fd.fd=fd;
+		poll_fd.events=POLLIN;
+		poll_fd.revents=0;
+		retval = poll(&poll_fd,1,10000);
+		if (retval==0) {
+			menuwin_expose(NULL); // each 10 seconds of inactivity, refresh the user bar to keep the clock and indicators updated
+			continue;
 		}
-		free(e);
+		while(e=xcb_poll_for_event(conn)) {
+			uint8_t r=e->response_type&~0x80;
+		
+			if (r>=xrandr) {
+				switch(r-xrandr) {
+					case(XCB_RANDR_SCREEN_CHANGE_NOTIFY):
+						action_xrandr_screen_change_notify(e);
+					break;
+				}
+			} else {
+				switch(r) {
+					case(XCB_KEY_RELEASE):
+						action_key(e);
+					break;
+					case (XCB_CREATE_NOTIFY):
+						//xcb_create_notify_event_t *ee=(xcb_create_notify_event_t *)e;
+					break;
+					case(XCB_UNMAP_NOTIFY):
+						action_unmap_notify(e);
+					break;
+					case(XCB_DESTROY_NOTIFY):
+						action_destroy_notify(e);
+					break;
+					case(XCB_MAP_REQUEST):
+						action_map_request(e);
+					break;
+					case(XCB_MAP_NOTIFY):
+					case(XCB_MAPPING_NOTIFY):
+						support_send_dock_up(NULL,NULL); // ensure that the dock is always on top
+					break;
+					case(XCB_CONFIGURE_NOTIFY):
+						action_configure_notify(e);
+					break;
+					case(XCB_CONFIGURE_REQUEST):
+						action_configure_request(e);
+					break;
+					case(XCB_CIRCULATE_REQUEST):
+						//xcb_circulate_request_event_t *ee=(xcb_circulate_request_event_t *)e;
+					break;
+					case(XCB_EXPOSE):
+						action_expose(e);
+					break;
+					case(XCB_ENTER_NOTIFY):
+						action_mouse_enter(e);
+					break;
+					case(XCB_LEAVE_NOTIFY):
+						action_mouse_leave(e);
+					break;
+					case(XCB_BUTTON_RELEASE):
+						action_mouse_click(e);
+					break;
+					case(0): {
+						xcb_generic_error_t *ee=(xcb_generic_error_t *)e;
+						printf("error event type %d\n",ee->error_code);
+					}
+					break;
+					default:
+						printf("unhandled event type %d\n",e->response_type);
+					break;
+				}
+			}
+			free(e);
+		}
 	}
 	destroy_tabletwm();
 	xcb_disconnect(conn);

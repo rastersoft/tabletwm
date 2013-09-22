@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include "menuwin.h"
 #include "globals.h"
@@ -858,7 +860,51 @@ key_end:
 	return;
 }
 
+void menuwin_paint_clock() {
+
+	struct timeval tv;
+	struct tm *l_time;
+	cairo_text_extents_t te;
+	char string[100];
+	float date_width;
+
+	gettimeofday(&tv,NULL);
+	l_time=localtime(&tv.tv_sec);
+
+	float scale_h=((float)height)/((float)KEYS_H_DIVISOR);
+	float scale_w=((float)width)/((float)KEYS_PER_ROW);
+
+	menuwin_paint_button(key_win.cr,1,0,2,1,0.8,1.0,0.2);
+	//cairo_restore(key_win.cr);
+
+	//cairo_save(key_win.cr);
+	//cairo_scale(key_win.cr,scale_h,scale_h);
+	cairo_set_font_size(key_win.cr,0.9);
+	
+	cairo_set_source_rgb(key_win.cr, 0,0,0);
+	
+	strftime(string,99,"%x",l_time);
+	cairo_text_extents(key_win.cr,string, &te);
+	cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),0.05-te.y_bearing);
+	cairo_show_text(key_win.cr,string);
+	date_width=te.width;
+
+	strftime(string,99,"%k:%M",l_time);	
+	cairo_text_extents(key_win.cr,string, &te);
+	cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),-0.05-te.height-te.y_bearing);
+	cairo_show_text(key_win.cr,string);
+
+
+	cairo_restore(key_win.cr);
+	
+}
+
 void menuwin_expose(xcb_expose_event_t *ee) {
+
+	if (key_win.possition==0) {
+		xcb_flush(conn);
+		return;
+	}
 
 	key_win.cr=cairo_create(key_win.surface);
 	cairo_select_font_face(key_win.cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
@@ -869,6 +915,7 @@ void menuwin_expose(xcb_expose_event_t *ee) {
 	if (key_win.possition) {
 		menuwin_paint_buttons();
 	}
+	menuwin_paint_clock();
 	xcb_flush(conn);
 	cairo_destroy(key_win.cr);
 }

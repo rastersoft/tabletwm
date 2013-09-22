@@ -860,6 +860,63 @@ key_end:
 	return;
 }
 
+void menuwin_set_color_scale(cairo_t *cr,float v) {
+
+	float r,g;
+
+	if (v<=0.5) {
+		r=1.0;
+		g=v/0.5;
+	} else {
+		r=(v-0.5)/0.5;
+		g=1.0;
+	}
+	cairo_set_source_rgb(cr,r,g,0.0);
+}
+
+void menuwin_paint_batery() {
+
+	float tmp,bat;
+	char string[100];
+	int tmp2;
+
+	menuwin_paint_button(key_win.cr,3,0,1,1,0.8,1.0,0.2);
+
+	FILE *apm=fopen("/proc/apm","r");
+	if (apm==NULL) {
+		cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
+	} else {
+		fscanf(apm,"%f %f %x %x %x %x %f%% %d %s",&tmp,&tmp,&tmp2,&tmp2,&tmp2,&tmp2,&bat,&tmp2,string);
+		menuwin_set_color_scale(key_win.cr,bat/100.0);
+		fclose(apm);
+	}
+
+	cairo_set_line_width(key_win.cr,0.12);
+	cairo_move_to(key_win.cr,-0.8,0.7);
+	cairo_line_to(key_win.cr,-0.1,0.7);
+	cairo_line_to(key_win.cr,-0.1,-0.5);
+	cairo_line_to(key_win.cr,-0.3,-0.5);
+	cairo_line_to(key_win.cr,-0.3,-0.7);
+	cairo_line_to(key_win.cr,-0.6,-0.7);
+	cairo_line_to(key_win.cr,-0.6,-0.5);
+	cairo_line_to(key_win.cr,-0.8,-0.5);
+	cairo_close_path(key_win.cr);
+	cairo_fill(key_win.cr);
+	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
+	cairo_move_to(key_win.cr,-0.8,0.7);
+	cairo_line_to(key_win.cr,-0.1,0.7);
+	cairo_line_to(key_win.cr,-0.1,-0.5);
+	cairo_line_to(key_win.cr,-0.3,-0.5);
+	cairo_line_to(key_win.cr,-0.3,-0.7);
+	cairo_line_to(key_win.cr,-0.6,-0.7);
+	cairo_line_to(key_win.cr,-0.6,-0.5);
+	cairo_line_to(key_win.cr,-0.8,-0.5);
+	cairo_close_path(key_win.cr);
+	cairo_stroke(key_win.cr);
+	cairo_restore(key_win.cr);
+
+}
+
 void menuwin_paint_clock() {
 
 	struct timeval tv;
@@ -916,6 +973,7 @@ void menuwin_expose(xcb_expose_event_t *ee) {
 		menuwin_paint_buttons();
 	}
 	menuwin_paint_clock();
+	menuwin_paint_batery();
 	xcb_flush(conn);
 	cairo_destroy(key_win.cr);
 }

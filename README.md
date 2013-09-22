@@ -1,13 +1,13 @@
 TabletWM
 ========
 
-Version 0.17
+Version 0.18
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
 It also has a virtual keyboard, to be able to manage apps without a physical keyboard.
 
-It is based on SWM, from CINOLT, available at http://lists.freedesktop.org/archives/xcb/2011-November/007375.html
+It is based on code from SWM, from CINOLT, available at http://lists.freedesktop.org/archives/xcb/2011-November/007375.html
 
 
 ## Using TabletWM
@@ -24,7 +24,7 @@ There are three hot keys:
 
 Ctrl+TAB allows to work easily with applications that uses several windows (like GIMP), because it will jump between the windows of the same app. It is quite limited, because it will also jump between windows of two different instances of the same app (let's say: two GEdit windows, or two different XTerm).
 
-Pressing the MENU key (the one at the right, between WINDOWS and CTRL) will expand a little options bar with several icons. The first one, red and with an X, will close the current window (like Alt+F4). The next one, with two **applications** and an arrow, allows to switch to the next app (like Alt+TAB). Finally, the next one with two **windows** allows to switch to the next window of the same application group. The last icon launchs an **application launcher**, configurable in the **/etc/tabletwm/tabletwm.cfg** file. By default it launches an XTERM. This bar can also be expanded by moving the cursor to the bottom of the screen.
+Pressing the MENU key (the one at the right, between WINDOWS and CTRL) will expand a little options bar with several icons. The first one, red and with an X, will close the current window (like Alt+F4). The next one, with two **applications** and an arrow, allows to switch to the next app (like Alt+TAB). Finally, the next one with two **windows** allows to switch to the next window of the same application group. The last icon launchs an **application launcher**. By default it launches *tabletlauncher*, but can be configure to launch any program by editing the file **/etc/tabletwm/tabletwm.cfg**. This bar can also be expanded by moving the cursor to the bottom of the screen.
 
 By pressing Ctrl+MENU, both the options bar and a virtual keyboard will be expanded. A new icon will be available in the options bar, that allows to move the keyboard to the top or bottom part of the screen. This is useful when using the GSL1680 user-space driver, because it generates this keypress when touching with three fingers.
 
@@ -40,13 +40,13 @@ The format for the /etc/tabletwm/tabletwm.cfg file is this:
 
     keyboard_lang:us
     onscreen_keyboard_map:us
-    launcher_command:/usr/bin/xterm
+    launcher_command:tabletlauncher
 
 The first entry specifies that the physical keyboard layout must be US. This is set by calling to **setxkbmap**.
 
 The second entry specifies that the on-screen keyboard layout must be US (so the layout will be taken from the file /etc/tabletwm/us.keymap).
 
-The third entry still doesn't work, but will contain the command to launch when the user touches the green button.
+The third entry contains the command to launch when the user touches the green button. By default is *tabletlauncher*, but can be changed to other, if desired.
 
 The lines must not contain blank spaces.
 
@@ -100,7 +100,6 @@ and an *init.d* will be installed that will launch TabletWM automatically during
 ## Known bugs
 
 * Windows existing before launching TabletWM are not recognized by it.
-* Sometimes the app seem to be locked. Just using the *shows the next window of the same application group* button (or Ctrl+TAB) fixes it. It seems to have to do when the app really needs a window bigger than the screen.
 
 
 ## License

@@ -134,8 +134,8 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		}
 		size->new_w=1;
 		size->new_h=1;
-		size->w=width;//(width >element->min_width ) ? width  : element->min_width;
-		size->h=height;//(height>element->min_height) ? height : element->min_height;
+		size->w=width;
+		size->h=height;
 		element->cur_width=size->w;
 		element->cur_height=size->h;
 		size->force_change=1;

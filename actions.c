@@ -244,8 +244,10 @@ void action_expose(xcb_generic_event_t *e) {
 
 void action_mouse_enter(xcb_generic_event_t *e) {
 
+	struct xcb_enter_notify_event_t *ee=(struct xcb_enter_notify_event_t *)e;
+
 	// Expand the menu (without keyboard) if the mouse enters the bottom part of the screen
-	if (key_win.possition==0) {
+	if ((key_win.possition==0)&&(ee->root_y==(height-1))) {
 		key_win.has_keyboard&=2; // disable keyboard, but keep where it was before
 		key_win.possition=1; // enable the menu
 		key_win.enabled_by_mouse=1;

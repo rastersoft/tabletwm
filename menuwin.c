@@ -878,30 +878,11 @@ void menuwin_paint_batery() {
 
 	float tmp,bat;
 	char string[100];
-	int tmp2;
+	int charge,tmp2;
 
 	menuwin_paint_button(key_win.cr,3,0,1,1,0.8,1.0,0.2);
 
-	FILE *apm=fopen("/proc/apm","r");
-	if (apm==NULL) {
-		cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
-	} else {
-		fscanf(apm,"%f %f %x %x %x %x %f%% %d %s",&tmp,&tmp,&tmp2,&tmp2,&tmp2,&tmp2,&bat,&tmp2,string);
-		menuwin_set_color_scale(key_win.cr,bat/100.0);
-		fclose(apm);
-	}
-
 	cairo_set_line_width(key_win.cr,0.12);
-	cairo_move_to(key_win.cr,-0.8,0.7);
-	cairo_line_to(key_win.cr,-0.1,0.7);
-	cairo_line_to(key_win.cr,-0.1,-0.5);
-	cairo_line_to(key_win.cr,-0.3,-0.5);
-	cairo_line_to(key_win.cr,-0.3,-0.7);
-	cairo_line_to(key_win.cr,-0.6,-0.7);
-	cairo_line_to(key_win.cr,-0.6,-0.5);
-	cairo_line_to(key_win.cr,-0.8,-0.5);
-	cairo_close_path(key_win.cr);
-	cairo_fill(key_win.cr);
 	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
 	cairo_move_to(key_win.cr,-0.8,0.7);
 	cairo_line_to(key_win.cr,-0.1,0.7);
@@ -912,7 +893,35 @@ void menuwin_paint_batery() {
 	cairo_line_to(key_win.cr,-0.6,-0.5);
 	cairo_line_to(key_win.cr,-0.8,-0.5);
 	cairo_close_path(key_win.cr);
-	cairo_stroke(key_win.cr);
+	cairo_fill(key_win.cr);
+
+	FILE *apm=fopen("/proc/apm","r");
+	if (apm==NULL) {
+		cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
+		bat=100.0;
+		charge=0;
+	} else {
+		fscanf(apm,"%f %f %x %x %x %x %f%% %d %s",&tmp,&tmp,&tmp2,&charge,&tmp2,&tmp2,&bat,&tmp2,string);
+		menuwin_set_color_scale(key_win.cr,bat/100.0);
+		fclose(apm);
+	}
+	cairo_rectangle(key_win.cr,-0.7,0.6,0.5,-(bat/100.0));
+	cairo_fill(key_win.cr);
+	if((charge&0x01)!=0) {
+		cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
+		cairo_move_to(key_win.cr,-0.45,0.5);
+		cairo_line_to(key_win.cr,-0.45,0.0);
+		cairo_stroke(key_win.cr);
+		cairo_arc(key_win.cr,-0.45,-0.20,0.20,0,3.141592);
+		cairo_fill(key_win.cr);
+		cairo_set_line_width(key_win.cr,0.09);
+		cairo_move_to(key_win.cr,-0.53,-0.15);
+		cairo_line_to(key_win.cr,-0.53,-0.35);
+		cairo_stroke(key_win.cr);
+		cairo_move_to(key_win.cr,-0.37,-0.15);
+		cairo_line_to(key_win.cr,-0.37,-0.35);
+		cairo_stroke(key_win.cr);
+	}
 	cairo_restore(key_win.cr);
 
 }
@@ -957,11 +966,6 @@ void menuwin_paint_clock() {
 }
 
 void menuwin_expose(xcb_expose_event_t *ee) {
-
-	if (key_win.possition==0) {
-		xcb_flush(conn);
-		return;
-	}
 
 	key_win.cr=cairo_create(key_win.surface);
 	cairo_select_font_face(key_win.cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);

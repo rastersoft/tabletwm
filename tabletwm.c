@@ -88,11 +88,17 @@ int main() {
 		poll_fd.fd=fd;
 		poll_fd.events=POLLIN;
 		poll_fd.revents=0;
-		retval = poll(&poll_fd,1,10000);
+		if (key_win.possition!=0) {
+			retval = poll(&poll_fd,1,2000); // refresh every two seconds if the bar is visible
+		} else {
+			retval = poll(&poll_fd,1,-1); // just wait for an event when the bar is not visible
+		}
 		if (retval==0) {
+			printf("no event\n");
 			menuwin_expose(NULL); // each 10 seconds of inactivity, refresh the user bar to keep the clock and indicators updated
 			continue;
 		}
+		printf("event\n");
 		while(e=xcb_poll_for_event(conn)) {
 			uint8_t r=e->response_type&~0x80;
 		

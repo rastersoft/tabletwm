@@ -868,7 +868,7 @@ void menuwin_set_color_scale(cairo_t *cr,float v) {
 		r=1.0;
 		g=v/0.5;
 	} else {
-		r=(v-0.5)/0.5;
+		r=1.0-(v-0.5)/0.5;
 		g=1.0;
 	}
 	cairo_set_source_rgb(cr,r,g,0.0);

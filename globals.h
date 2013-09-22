@@ -136,6 +136,7 @@ struct key_win_s {
 	struct wincache_element *cache;
 	uint8_t possition; // 0: minimized; 1: expanded
 	uint8_t has_keyboard; // 0: no keyboard bottom; 1: no keyboard top; 2: keyboard bottom; 3: keyboard top
+	uint8_t wait_for;
 	uint8_t enabled_by_mouse;
 	uint8_t mouse_grabed;
 	uint32_t width;

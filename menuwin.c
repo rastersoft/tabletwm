@@ -398,6 +398,7 @@ void menuwin_init() {
 	key_win.width=width;
 	key_win.height=1;
 	key_win.enabled_by_mouse=0;
+	key_win.wait_for=0;
 
 	fill_keycodes();
 }
@@ -807,10 +808,12 @@ void menuwin_press_key_at(int x, int y) {
 		break;
 		case 6:
 		case 7:
+			key_win.wait_for=1;
 			support_next_window(1);
 		break;
 		case 8:
 		case 9:
+			key_win.wait_for=1;
 			support_next_window(0);
 		break;
 		case 10:
@@ -967,6 +970,7 @@ void menuwin_paint_clock() {
 
 void menuwin_expose(xcb_expose_event_t *ee) {
 
+	key_win.wait_for=0;
 	key_win.cr=cairo_create(key_win.surface);
 	cairo_select_font_face(key_win.cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(key_win.cr,1.2);

@@ -259,7 +259,7 @@ void action_mouse_leave(xcb_generic_event_t *e) {
 
 	// Collapse the menu if the mouse leaves it, but only if it was expanded because the mouse entered the bottom part of the screen
 	// Never collapse it if it was expanded with a key
-	if ((key_win.possition==1)&&(key_win.enabled_by_mouse==1)) {
+	if ((key_win.possition==1)&&(key_win.enabled_by_mouse==1)&&(key_win.wait_for==0)) {
 		key_win.possition=0; // disable the menu
 		key_win.enabled_by_mouse=0;
 		menuwin_set_window();

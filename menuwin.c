@@ -881,50 +881,146 @@ void menuwin_paint_batery() {
 
 	float tmp,bat;
 	char string[100];
-	int charge,tmp2;
+	int charge,tmp2,retval;
+	int memtotal,memfree,memcached,swaptotal,swapfree;
 
 	menuwin_paint_button(key_win.cr,3,0,1,1,0.8,1.0,0.2);
 
 	cairo_set_line_width(key_win.cr,0.12);
 	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
-	cairo_move_to(key_win.cr,-0.8,0.7);
-	cairo_line_to(key_win.cr,-0.1,0.7);
-	cairo_line_to(key_win.cr,-0.1,-0.5);
-	cairo_line_to(key_win.cr,-0.3,-0.5);
-	cairo_line_to(key_win.cr,-0.3,-0.7);
-	cairo_line_to(key_win.cr,-0.6,-0.7);
-	cairo_line_to(key_win.cr,-0.6,-0.5);
-	cairo_line_to(key_win.cr,-0.8,-0.5);
+	cairo_move_to(key_win.cr,-0.9,0.7);
+	cairo_line_to(key_win.cr,-0.2,0.7);
+	cairo_line_to(key_win.cr,-0.2,-0.5);
+	cairo_line_to(key_win.cr,-0.4,-0.5);
+	cairo_line_to(key_win.cr,-0.4,-0.7);
+	cairo_line_to(key_win.cr,-0.7,-0.7);
+	cairo_line_to(key_win.cr,-0.7,-0.5);
+	cairo_line_to(key_win.cr,-0.9,-0.5);
 	cairo_close_path(key_win.cr);
 	cairo_fill(key_win.cr);
+
+	cairo_move_to(key_win.cr,0.8,0.5);
+	cairo_line_to(key_win.cr,0.3,0.5);
+	cairo_line_to(key_win.cr,0.3,-0.5);
+	cairo_line_to(key_win.cr,0.8,-0.5);
+	cairo_close_path(key_win.cr);
+	cairo_fill(key_win.cr);
+	cairo_move_to(key_win.cr,0.8,0.4);
+	cairo_line_to(key_win.cr,0.9,0.4);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.3,0.4);
+	cairo_line_to(key_win.cr,0.2,0.4);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.8,0.2);
+	cairo_line_to(key_win.cr,0.9,0.2);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.3,0.2);
+	cairo_line_to(key_win.cr,0.2,0.2);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.8,-0.4);
+	cairo_line_to(key_win.cr,0.9,-0.4);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.3,-0.4);
+	cairo_line_to(key_win.cr,0.2,-0.4);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.8,-0.2);
+	cairo_line_to(key_win.cr,0.9,-0.2);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.3,-0.2);
+	cairo_line_to(key_win.cr,0.2,-0.2);
+	cairo_stroke(key_win.cr);
+
+	cairo_move_to(key_win.cr,0.8,0.0);
+	cairo_line_to(key_win.cr,0.9,0.0);
+	cairo_stroke(key_win.cr);
+	cairo_move_to(key_win.cr,0.3,0.0);
+	cairo_line_to(key_win.cr,0.2,0.0);
+	cairo_stroke(key_win.cr);
+
 
 	FILE *apm=fopen("/proc/apm","r");
 	if (apm==NULL) {
 		cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
 		bat=100.0;
-		charge=0;
+		charge=1;
 	} else {
-		fscanf(apm,"%f %f %x %x %x %x %f%% %d %s",&tmp,&tmp,&tmp2,&charge,&tmp2,&tmp2,&bat,&tmp2,string);
+		retval=fscanf(apm,"%f %f %x %x %x %x %f%% %d %s",&tmp,&tmp,&tmp2,&charge,&tmp2,&tmp2,&bat,&tmp2,string);
 		menuwin_set_color_scale(key_win.cr,bat/100.0);
 		fclose(apm);
 	}
-	cairo_rectangle(key_win.cr,-0.7,0.6,0.5,-(bat/100.0));
+	cairo_rectangle(key_win.cr,-0.8,0.6,0.5,-(bat/100.0));
 	cairo_fill(key_win.cr);
 	if((charge&0x01)!=0) {
 		cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
-		cairo_move_to(key_win.cr,-0.45,0.5);
-		cairo_line_to(key_win.cr,-0.45,0.0);
+		cairo_move_to(key_win.cr,-0.55,0.5);
+		cairo_line_to(key_win.cr,-0.55,0.0);
 		cairo_stroke(key_win.cr);
-		cairo_arc(key_win.cr,-0.45,-0.20,0.20,0,3.141592);
+		cairo_arc(key_win.cr,-0.55,-0.20,0.20,0,3.141592);
 		cairo_fill(key_win.cr);
 		cairo_set_line_width(key_win.cr,0.09);
-		cairo_move_to(key_win.cr,-0.53,-0.15);
-		cairo_line_to(key_win.cr,-0.53,-0.35);
+		cairo_move_to(key_win.cr,-0.63,-0.15);
+		cairo_line_to(key_win.cr,-0.63,-0.35);
 		cairo_stroke(key_win.cr);
-		cairo_move_to(key_win.cr,-0.37,-0.15);
-		cairo_line_to(key_win.cr,-0.37,-0.35);
+		cairo_move_to(key_win.cr,-0.47,-0.15);
+		cairo_line_to(key_win.cr,-0.47,-0.35);
 		cairo_stroke(key_win.cr);
 	}
+	
+	float v;
+	FILE *meminfo=fopen("/proc/meminfo","r");
+	memtotal=100;
+	memfree=100;
+	memcached=0;
+	swaptotal=0;
+	swapfree=0;
+	charge=1;
+	if (meminfo==NULL) {
+		cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
+	} else {
+		while(!feof(meminfo)) {
+			retval=fscanf(meminfo,"%s",string);
+			if (retval<1) {
+				continue;
+			}
+			retval=fscanf(meminfo,"%d",&tmp2);
+			if (retval<1) {
+				continue;
+			}
+			if(!strcmp(string,"MemTotal:")) {
+				memtotal=tmp2;
+			} else if(!strcmp(string,"MemFree:")) {
+				memfree=tmp2;
+			} else if(!strcmp(string,"Cached:")) {
+				memcached=tmp2;
+			} else if(!strcmp(string,"SwapTotal:")) {
+				swaptotal=tmp2;
+			} else if(!strcmp(string,"SwapFree:")) {
+				swapfree=tmp2;
+			}
+		}
+		fclose(meminfo);
+	}
+	printf("%d %d %d %d %d\n",memtotal,memfree, memcached,swaptotal,swapfree);
+	v=((float)(memfree+memcached+swapfree))/((float)(memtotal+swaptotal));
+	menuwin_set_color_scale(key_win.cr,v);
+	cairo_rectangle(key_win.cr,0.4,0.4,0.3,-(v*0.8));
+	cairo_fill(key_win.cr);
+	if((charge&0x01)!=0) {
+		cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
+		cairo_move_to(key_win.cr,-0.55,0.5);
+		cairo_line_to(key_win.cr,-0.55,0.0);
+		cairo_stroke(key_win.cr);
+		cairo_arc(key_win.cr,-0.55,-0.20,0.20,0,3.141592);
+		cairo_fill(key_win.cr);
+		cairo_set_line_width(key_win.cr,0.09);
+		cairo_move_to(key_win.cr,-0.63,-0.15);
+		cairo_line_to(key_win.cr,-0.63,-0.35);
+		cairo_stroke(key_win.cr);
+		cairo_move_to(key_win.cr,-0.47,-0.15);
+		cairo_line_to(key_win.cr,-0.47,-0.35);
+		cairo_stroke(key_win.cr);
+	}
+	
 	cairo_restore(key_win.cr);
 
 }

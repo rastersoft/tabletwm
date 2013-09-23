@@ -884,7 +884,7 @@ void menuwin_paint_batery() {
 	int charge,tmp2,retval;
 	int memtotal,memfree,memcached,swaptotal,swapfree;
 
-	menuwin_paint_button(key_win.cr,3,0,1,1,0.8,1.0,0.2);
+	menuwin_paint_button(key_win.cr,3,0,1,1,1.0,1.0,1.0);
 
 	cairo_set_line_width(key_win.cr,0.12);
 	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
@@ -954,7 +954,7 @@ void menuwin_paint_batery() {
 	
 		// socket when charging
 	
-		cairo_set_source_rgb(key_win.cr,0.5,0.5,0.5);
+		cairo_set_source_rgb(key_win.cr,0.75,0.75,0.75);
 		cairo_move_to(key_win.cr,-0.55,0.5);
 		cairo_line_to(key_win.cr,-0.55,0.0);
 		cairo_stroke(key_win.cr);

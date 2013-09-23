@@ -56,7 +56,7 @@ void fill_keycodes() {
 	uint32_t max_keys;
 	int w,h,retval;
 	int jumpto;
-	
+
 	context=xkb_context_new(0);
 	keymap=xkb_keymap_new_from_names(context,&rules,0);
 
@@ -76,9 +76,9 @@ void fill_keycodes() {
 	mods[7]=1; // fake mod, used for "no mod"
 
 	// Read the keyboard definition files
-	
+
 	sprintf(file_path,"%s/%s.keymap",BASE_CONFIG_DIR,lang_onscreen);
-	
+
 	FILE *keyboard_file=fopen(file_path,"r");
 	if (keyboard_file==NULL) {
 		printf("Can't open keyboard definition file %s. Trying with US file\n",file_path);
@@ -222,13 +222,13 @@ void fill_keycodes() {
 		// Now assign new keysyms to keycodes not used, to allow other keysyms not available in US keyboards
 
 		xcb_key_symbols_t *symbols;
-		
+
 		symbols=xcb_key_symbols_alloc(conn);
 		xcb_flush(conn);
 
 		xcb_keycode_t keycode=8;
 		xcb_keycode_t keycode_found;
-		
+
 		xcb_keysym_t keysyms[4];
 		xcb_keycode_t keycode_shift;
 
@@ -260,7 +260,7 @@ void fill_keycodes() {
 					}
 					keycode++;
 				}
-			
+
 				if (keycode_found==0) {
 					printf("No more codes available\n");
 					break; // there are no more free keycodes available
@@ -460,7 +460,7 @@ void menuwin_paint_change_app_button() {
 	cairo_line_to(key_win.cr,0.7,0.0);
 	cairo_line_to(key_win.cr,0.3,0.4);
 	cairo_stroke(key_win.cr);
-	
+
 	cairo_set_line_width(key_win.cr,0.12);
 	cairo_move_to(key_win.cr,-1.2,-0.50);
 	cairo_line_to(key_win.cr,-2.0,-0.50);
@@ -477,7 +477,7 @@ void menuwin_paint_change_app_button() {
 	cairo_move_to(key_win.cr,-1.2,0.50);
 	cairo_line_to(key_win.cr,-2.0,0.50);
 	cairo_stroke(key_win.cr);
-	
+
 	cairo_move_to(key_win.cr,1.2,-0.50);
 	cairo_line_to(key_win.cr,2.0,-0.50);
 	cairo_stroke(key_win.cr);
@@ -493,14 +493,14 @@ void menuwin_paint_change_app_button() {
 	cairo_move_to(key_win.cr,1.2,0.50);
 	cairo_line_to(key_win.cr,2.0,0.50);
 	cairo_stroke(key_win.cr);
-	
+
 	cairo_restore(key_win.cr);
 }
 
 void menuwin_paint_change_window_button() {
 
 	menuwin_paint_button(key_win.cr,8,0,2,1,1.0,1.0,1.0);
-	
+
 	cairo_set_line_width(key_win.cr,0.2);
 	cairo_set_source_rgb(key_win.cr,1.0,1.0,1.0);
 	cairo_rectangle(key_win.cr,-0.2,-0.8,1.2,1.3);
@@ -528,8 +528,8 @@ void menuwin_paint_launcher() {
 	cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
 	cairo_arc(key_win.cr,0.0,0.0,0.8,0,M_PI42);
 	cairo_stroke(key_win.cr);
-	
-	
+
+
 	cairo_rectangle(key_win.cr,-0.5,-0.30,0.25,0.25);
 	cairo_rectangle(key_win.cr,-0.5,0.05,0.25,0.25);
 	cairo_rectangle(key_win.cr,-0.15,-0.30,0.25,0.25);
@@ -694,13 +694,13 @@ void menuwin_paint_button(cairo_t *cr,int x, int y, int w, int h, float r, float
 
 	// coordinates and size are in width/KEYS_H_DIVISOR and height/KEYS_H_DIVISOR units
 	// 0,0 is bottom-left
-	
+
 	x=(x*width)/KEYS_PER_ROW;
 	y=key_win.height-(((y+1)*height)/KEYS_H_DIVISOR);
 	w=(w*width)/KEYS_PER_ROW;
 	h=(h*height)/KEYS_H_DIVISOR;
 	float scale;
-	
+
 	cairo_set_source_rgb(cr,r,g,b);
 	cairo_move_to(cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
 	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
@@ -825,7 +825,7 @@ void menuwin_press_key_at(int x, int y) {
 	}
 
 	int lx,ly,i;
-	
+
 	i=4*KEYS_PER_ROW*keyboard_current_block;
 	for(ly=4;ly>0;ly--) {
 		for(lx=0;lx<KEYS_PER_ROW;lx++) {
@@ -951,10 +951,10 @@ void menuwin_paint_batery() {
 	cairo_rectangle(key_win.cr,-0.8,0.6,0.5,-(bat/100.0));
 	cairo_fill(key_win.cr);
 	if((charge&0x01)!=0) {
-	
+
 		// socket when charging
-	
-		cairo_set_source_rgb(key_win.cr,0.75,0.75,0.75);
+
+		cairo_set_source_rgb(key_win.cr,0.5,0.5,1.0);
 		cairo_move_to(key_win.cr,-0.55,0.5);
 		cairo_line_to(key_win.cr,-0.55,0.0);
 		cairo_stroke(key_win.cr);
@@ -968,7 +968,7 @@ void menuwin_paint_batery() {
 		cairo_line_to(key_win.cr,-0.47,-0.35);
 		cairo_stroke(key_win.cr);
 	}
-	
+
 	float v;
 	FILE *meminfo=fopen("/proc/meminfo","r");
 	memtotal=100;
@@ -1010,22 +1010,7 @@ void menuwin_paint_batery() {
 	menuwin_set_color_scale(key_win.cr,v);
 	cairo_rectangle(key_win.cr,0.4,0.4,0.3,-(v*0.8));
 	cairo_fill(key_win.cr);
-	if((charge&0x01)!=0) {
-		cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
-		cairo_move_to(key_win.cr,-0.55,0.5);
-		cairo_line_to(key_win.cr,-0.55,0.0);
-		cairo_stroke(key_win.cr);
-		cairo_arc(key_win.cr,-0.55,-0.20,0.20,0,3.141592);
-		cairo_fill(key_win.cr);
-		cairo_set_line_width(key_win.cr,0.09);
-		cairo_move_to(key_win.cr,-0.63,-0.15);
-		cairo_line_to(key_win.cr,-0.63,-0.35);
-		cairo_stroke(key_win.cr);
-		cairo_move_to(key_win.cr,-0.47,-0.15);
-		cairo_line_to(key_win.cr,-0.47,-0.35);
-		cairo_stroke(key_win.cr);
-	}
-	
+
 	cairo_restore(key_win.cr);
 
 }
@@ -1050,23 +1035,23 @@ void menuwin_paint_clock() {
 	//cairo_save(key_win.cr);
 	//cairo_scale(key_win.cr,scale_h,scale_h);
 	cairo_set_font_size(key_win.cr,0.9);
-	
+
 	cairo_set_source_rgb(key_win.cr, 0,0,0);
-	
+
 	strftime(string,99,"%x",l_time);
 	cairo_text_extents(key_win.cr,string, &te);
 	cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),0.05-te.y_bearing);
 	cairo_show_text(key_win.cr,string);
 	date_width=te.width;
 
-	strftime(string,99,"%k:%M",l_time);	
+	strftime(string,99,"%k:%M",l_time);
 	cairo_text_extents(key_win.cr,string, &te);
 	cairo_move_to(key_win.cr,-te.x_bearing-(te.width/2.0),-0.05-te.height-te.y_bearing);
 	cairo_show_text(key_win.cr,string);
 
 
 	cairo_restore(key_win.cr);
-	
+
 }
 
 void menuwin_expose(xcb_expose_event_t *ee) {

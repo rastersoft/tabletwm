@@ -951,7 +951,10 @@ void menuwin_paint_batery() {
 	cairo_rectangle(key_win.cr,-0.8,0.6,0.5,-(bat/100.0));
 	cairo_fill(key_win.cr);
 	if((charge&0x01)!=0) {
-		cairo_set_source_rgb(key_win.cr,0.0,0.0,0.0);
+	
+		// socket when charging
+	
+		cairo_set_source_rgb(key_win.cr,0.5,0.5,0.5);
 		cairo_move_to(key_win.cr,-0.55,0.5);
 		cairo_line_to(key_win.cr,-0.55,0.0);
 		cairo_stroke(key_win.cr);
@@ -1000,8 +1003,10 @@ void menuwin_paint_batery() {
 		}
 		fclose(meminfo);
 	}
-	printf("%d %d %d %d %d\n",memtotal,memfree, memcached,swaptotal,swapfree);
 	v=((float)(memfree+memcached+swapfree))/((float)(memtotal+swaptotal));
+	if (v>1.0) {
+		v=1.0;
+	}
 	menuwin_set_color_scale(key_win.cr,v);
 	cairo_rectangle(key_win.cr,0.4,0.4,0.3,-(v*0.8));
 	cairo_fill(key_win.cr);

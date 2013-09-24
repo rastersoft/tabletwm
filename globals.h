@@ -26,6 +26,7 @@
 #include <cairo/cairo-xcb.h>
 #include <X11/keysym.h>
 #include <libintl.h>
+#include <locale.h>
 
 #define TWM_NAME "tabletwm"
 

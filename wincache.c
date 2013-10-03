@@ -175,8 +175,8 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 			printf("Class name: %s; class instance name: %s\n",element->class_name,element->instance);
 #endif
 		} else {
-			element->class_name=NULL;
-			element->instance=NULL;
+			element->class_name=strdup("");
+			element->instance=strdup("");
 			free(wmclass);
 		}
 	}

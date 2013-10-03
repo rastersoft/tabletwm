@@ -213,6 +213,9 @@ void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
 
 	if (r2==NULL) {
 		r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+		if(!r) {
+			return;
+		}
 		wp=xcb_query_tree_children(r);
 	} else {
 		wp=wp2;
@@ -247,8 +250,10 @@ void support_next_window(int next_app) {
 	struct wincache_element *element,*current_window;
 
 	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+	if(!r) {
+		return;
+	}
 	wp=xcb_query_tree_children(r);
-
 	i = r->children_len;
 	current_window=NULL;
 	while(i) {
@@ -312,7 +317,11 @@ void support_close_window() {
 	
 	/* delete window */
 	xcb_query_tree_reply_t *reply=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+	if(!reply) {
+		return;
+	}
 	xcb_window_t *wp=xcb_query_tree_children(reply);
+
 	uint16_t i=reply->children_len;
 	while(i) {
 		/* find top-most mapped top-level window, and WM_DELETE_WINDOW it */
@@ -360,6 +369,9 @@ void support_set_focus() {
 
 	/* set the new input focus */
 	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
+	if (!r) {
+		return;
+	}
 	xcb_window_t *wp=xcb_query_tree_children(r);
 	uint16_t i=r->children_len;
 	while(i) {

@@ -34,7 +34,6 @@ void shutdown_init() {
 	xcb_void_cookie_t void_cookie;
 
 	shutdown_win.surface=NULL;
-	shutdown_win.cr=NULL;
 	
 	shutdown_win.window = xcb_generate_id(conn);
 	uint32_t values[1] = {XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_BUTTON_RELEASE};
@@ -98,62 +97,62 @@ void shutdown_hide() {
 	}
 }
 
-void shutdown_paint_button(struct key_win_s* win,int x, int y, int w, int h, int rows, int columns, float r, float g, float b) {
+void shutdown_paint_button(cairo_t *cr,int x, int y, int w, int h, int rows, int columns, float r, float g, float b) {
 
-	x=(x*win->width)/columns;
-	y=(y*win->height)/rows;
-	w=(w*win->width)/columns;
-	h=(h*win->height)/rows;
+	x=(x*shutdown_win.width)/columns;
+	y=(y*shutdown_win.height)/rows;
+	w=(w*shutdown_win.width)/columns;
+	h=(h*shutdown_win.height)/rows;
 	float scale;
 	
-	cairo_set_source_rgb(win->cr,r,g,b);
-	cairo_move_to(win->cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
-	cairo_arc(win->cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
-	cairo_arc(win->cr,x+w-BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,0,M_PI2);
-	cairo_arc(win->cr,x+BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI2,M_PI);
-	cairo_arc(win->cr,x+BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI,M_PI32);
-	cairo_fill(win->cr);
+	cairo_set_source_rgb(cr,r,g,b);
+	cairo_move_to(cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
+	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
+	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,0,M_PI2);
+	cairo_arc(cr,x+BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI2,M_PI);
+	cairo_arc(cr,x+BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI,M_PI32);
+	cairo_fill(cr);
 
-	cairo_save(win->cr);
-	cairo_translate(win->cr,x+w/2,y+h/2);
-	w=(win->width)/columns;
-	h=(win->height)/rows;
+	cairo_save(cr);
+	cairo_translate(cr,x+w/2,y+h/2);
+	w=(shutdown_win.width)/columns;
+	h=(shutdown_win.height)/rows;
 	if (w>h) {
 		scale=(float)h;
 	} else {
 		scale=(float)w;
 	}
 	scale/=2.0;
-	cairo_scale(win->cr,scale,scale);
+	cairo_scale(cr,scale,scale);
 }
 
-void shutdown_paint_cancel() {
+void shutdown_paint_cancel(cairo_t *cr) {
 
-	shutdown_paint_button(&shutdown_win,0,2,1,1,3,2,1.0,0.0,0.0);
-	cairo_set_source_rgb(shutdown_win.cr,0.0,0.0,0.0);
-	cairo_set_line_width(shutdown_win.cr,0.2);
-	cairo_move_to(shutdown_win.cr,-0.8,-0.8);
-	cairo_line_to(shutdown_win.cr,0.8,0.8);
-	cairo_stroke(shutdown_win.cr);
-	cairo_move_to(shutdown_win.cr,0.8,-0.8);
-	cairo_line_to(shutdown_win.cr,-0.8,0.8);
-	cairo_stroke(shutdown_win.cr);
-	cairo_restore(shutdown_win.cr);
+	shutdown_paint_button(cr,0,2,1,1,3,2,1.0,0.0,0.0);
+	cairo_set_source_rgb(cr,0.0,0.0,0.0);
+	cairo_set_line_width(cr,0.2);
+	cairo_move_to(cr,-0.8,-0.8);
+	cairo_line_to(cr,0.8,0.8);
+	cairo_stroke(cr);
+	cairo_move_to(cr,0.8,-0.8);
+	cairo_line_to(cr,-0.8,0.8);
+	cairo_stroke(cr);
+	cairo_restore(cr);
 
 }
 
-void shutdown_paint_ok() {
+void shutdown_paint_ok(cairo_t *cr) {
 
-	shutdown_paint_button(&shutdown_win,1,2,1,1,3,2,0.0,1.0,0.0);
-	cairo_set_source_rgb(shutdown_win.cr,0.0,0.0,0.0);
-	cairo_set_line_width(shutdown_win.cr,0.2);
-	cairo_move_to(shutdown_win.cr,0.0,0.8);
-	cairo_arc_negative(shutdown_win.cr,-1.0,0.8,1.0,0,M_PI*1.7);
-	cairo_stroke(shutdown_win.cr);
-	cairo_move_to(shutdown_win.cr,0.0,0.8);
-	cairo_arc(shutdown_win.cr,3.0,0.8,3.0,M_PI,M_PI*1.18);
-	cairo_stroke(shutdown_win.cr);
-	cairo_restore(shutdown_win.cr);
+	shutdown_paint_button(cr,1,2,1,1,3,2,0.0,1.0,0.0);
+	cairo_set_source_rgb(cr,0.0,0.0,0.0);
+	cairo_set_line_width(cr,0.2);
+	cairo_move_to(cr,0.0,0.8);
+	cairo_arc_negative(cr,-1.0,0.8,1.0,0,M_PI*1.7);
+	cairo_stroke(cr);
+	cairo_move_to(cr,0.0,0.8);
+	cairo_arc(cr,3.0,0.8,3.0,M_PI,M_PI*1.18);
+	cairo_stroke(cr);
+	cairo_restore(cr);
 
 }
 
@@ -163,21 +162,21 @@ void shutdown_expose() {
 	
 		cairo_text_extents_t te;
 	
-		shutdown_win.cr=cairo_create(shutdown_win.surface);
-		cairo_select_font_face(shutdown_win.cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(shutdown_win.cr,18);
+		cairo_t *cr=cairo_create(shutdown_win.surface);
+		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
+		cairo_set_font_size(cr,18);
 
-		cairo_set_source_rgb(shutdown_win.cr, 0.75,0.75,0.75);
-		cairo_paint(shutdown_win.cr);
-		shutdown_paint_cancel();
-		shutdown_paint_ok();
-		cairo_set_source_rgb(shutdown_win.cr,0.0,0.0,0.0);
-		cairo_text_extents(shutdown_win.cr,"Shutdown the device?", &te);
-		cairo_move_to(shutdown_win.cr,(shutdown_win.width/2)+(-te.x_bearing-(te.width/2.0)),(shutdown_win.height/3)+(-te.y_bearing-(te.height/2.0)));
-		cairo_show_text(shutdown_win.cr,"Shutdown the device?");
+		cairo_set_source_rgb(cr, 0.75,0.75,0.75);
+		cairo_paint(cr);
+		shutdown_paint_cancel(cr);
+		shutdown_paint_ok(cr);
+		cairo_set_source_rgb(cr,0.0,0.0,0.0);
+		cairo_text_extents(cr,"Shutdown the device?", &te);
+		cairo_move_to(cr,(shutdown_win.width/2)+(-te.x_bearing-(te.width/2.0)),(shutdown_win.height/3)+(-te.y_bearing-(te.height/2.0)));
+		cairo_show_text(cr,"Shutdown the device?");
 
 		xcb_flush(conn);
-		cairo_destroy(shutdown_win.cr);
+		cairo_destroy(cr);
 	}
 }
 

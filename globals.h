@@ -143,7 +143,6 @@ struct key_win_s {
 	uint32_t width;
 	uint32_t height;
 	cairo_surface_t *surface;
-	cairo_t *cr;
 };
 
 enum key_type {KEY_BLANK, KEY_PH, KEY_TAB, KEY_SPACE, KEY_RETURN, KEY_DELETE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_JUMPTO};

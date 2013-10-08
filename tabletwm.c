@@ -101,9 +101,13 @@ int main() {
 			uint8_t r=e->response_type&~0x80;
 		
 			if (r>=xrandr) {
+				printf("XRandR\n");
 				switch(r-xrandr) {
 					case(XCB_RANDR_SCREEN_CHANGE_NOTIFY):
 						action_xrandr_screen_change_notify(e);
+					break;
+					default:
+						printf("XRandR unknown: %d\n",r-xrandr);
 					break;
 				}
 			} else {

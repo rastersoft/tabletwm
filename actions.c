@@ -36,26 +36,67 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 	 * maximize all currently mapped windows to new size
 	 */
 
+	struct wincache_element *element;
 	xcb_randr_screen_change_notify_event_t *ee=(xcb_randr_screen_change_notify_event_t *)e;
-	width=ee->width;
-	height=ee->height;
+	if ((ee->rotation==XCB_RANDR_ROTATION_ROTATE_90)||(ee->rotation==XCB_RANDR_ROTATION_ROTATE_270)) {
+		width=ee->height;
+		height=ee->width;
+	} else {
+		width=ee->width;
+		height=ee->height;
+	}
+	printf("width: %d height: %d rotation: %d root: %d request_window: %d\n",width,height,ee->rotation,ee->root, ee->request_window);
 	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
 	xcb_window_t *wp=xcb_query_tree_children(r);
 	uint16_t i=r->children_len;
+	struct support_new_size sizes;
+	uint32_t flags;
+	int loop;
+	uint32_t v[4];
+
 	while(i) {
 		i--;
 		xcb_window_t w=wp[i];
-		xcb_get_window_attributes_reply_t *r=xcb_get_window_attributes_reply(conn,xcb_get_window_attributes_unchecked(conn,w),0);
-		if (r->map_state==XCB_MAP_STATE_VIEWABLE) {
-			xcb_get_property_reply_t *r=xcb_get_property_reply(conn,xcb_get_property_unchecked(conn,0,w,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1),0);
-			if (!r->length) {
-				uint32_t v[4]={0,0,width,height};
-				xcb_configure_window(conn,w,XCB_CONFIG_WINDOW_X|XCB_CONFIG_WINDOW_Y|XCB_CONFIG_WINDOW_WIDTH|XCB_CONFIG_WINDOW_HEIGHT,v);
-			}
-			free(r);
+		element=wincache_find_element(w);
+		if (!element) {
+			continue;
 		}
-		free(r);
+		if (element->mapped==0) {
+			continue;
+		}
+		
+		memset(&sizes,0,sizeof(struct support_new_size));
+		sizes.w=element->cur_width;
+		sizes.h=element->cur_height;
+		sizes.new_w=1;
+		sizes.new_h=1;
+
+		support_calculate_new_size(w,&sizes);
+
+		/* set window size and position if needed */
+		flags=0;
+		loop=0;
+		if (sizes.new_x) {
+			v[loop++]=sizes.x;
+			flags|=XCB_CONFIG_WINDOW_X;
+		}
+		if (sizes.new_y) {
+			v[loop++]=sizes.y;
+			flags|=XCB_CONFIG_WINDOW_Y;
+		}
+		if (sizes.new_w) {
+			v[loop++]=sizes.w;
+			flags|=XCB_CONFIG_WINDOW_WIDTH;
+		}
+		if (sizes.new_h) {
+			v[loop++]=sizes.h;
+			flags|=XCB_CONFIG_WINDOW_HEIGHT;
+		}
+		if (flags) {
+			xcb_configure_window(conn,w,flags,v);
+		}
 	}
+	menuwin_set_window();
 	xcb_flush(conn);
 	free(r);
 }

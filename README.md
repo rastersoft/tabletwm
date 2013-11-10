@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.22
+Version 0.23
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
@@ -95,6 +95,17 @@ in your device, and will compile and install the window manager. You can also ty
 	sudo make install-init
 
 and an *init.d* will be installed that will launch TabletWM automatically during startup using the *debian* user. This, of course, only works for Debian systems with a user called *debian*. It also will install a *.xinitrc* file at */home/debian* that will launch the *dbus user session*, and the *ConsoleKit* daemon.
+
+
+## Setting language and timezone
+
+You can edit the *.xinitrc* file available in the *debian* folder to set your language and timezone. By default no language, nor timezone are defined. To change it, edit *.xinitrc* and uncomment and modify the lines:
+
+    #Edit and uncomment this to set your preferred language
+    #export LANG=en_US.UTF-8
+
+    #Edit and uncomment this to set your timezone
+    #export TZ="Europe/Madrid"
 
 
 ## Known bugs

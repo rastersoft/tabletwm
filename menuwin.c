@@ -944,7 +944,7 @@ void menuwin_paint_batery(cairo_t *cr) {
 		bat=100.0;
 		charge=1;
 	} else {
-		retval=fscanf(apm,"%f %f %x %x %x %x %f%% %d %s",&tmp,&tmp,&tmp2,&charge,&tmp2,&tmp2,&bat,&tmp2,string);
+		retval=fscanf(apm,"%s %s %x %x %x %x %f%% %d %s",string,string,&tmp2,&charge,&tmp2,&tmp2,&bat,&tmp2,string);
 		menuwin_set_color_scale(cr,bat/100.0);
 		fclose(apm);
 	}

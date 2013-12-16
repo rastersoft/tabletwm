@@ -1061,7 +1061,7 @@ void menuwin_expose(xcb_expose_event_t *ee) {
 	cairo_surface_t *surface_tmp;
 	cairo_t *cr;
 	
-	surface_tmp = cairo_surface_create_similar_image (key_win.surface,CAIRO_FORMAT_ARGB32, key_win.width, key_win.height);
+	surface_tmp = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, key_win.width, key_win.height);
 	
 	cr = cairo_create (surface_tmp);
 

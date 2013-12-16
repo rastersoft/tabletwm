@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.23
+Version 0.24
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 

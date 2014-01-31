@@ -1,7 +1,7 @@
 TabletWM
 ========
 
-Version 0.24
+Version 0.25
 
 TabletWM is a minimalistic Window Manager, oriented to tablet PCs and devices with small screens. It tries to keep all windows maximized. No window has decorations.
 
@@ -30,7 +30,7 @@ By pressing Ctrl+MENU, both the options bar and a virtual keyboard will be expan
 
 Pressing Alt+MENU (or the power button), TabletWM will ask to power down the device. It calls **/sbin/halt**, so you must first give it SUID priviledges with **sudo chmod 4755 /sbin/halt**.
 
-Is important to remember that TabletWM grabs the mouse when the on-screen keyboard is visible. This is a must to avoid problems with popups and other kind of windows. This means that, if you have the on-screen keyboard visible and want to do a click in the screen, you must hide the keyboard first.
+Is important to remember that TabletWM grabs the mouse when the on-screen keyboard is visible. This is a must to avoid problems with popups and other kind of windows. In recent versions it is possible to do click on the window with the on-screen keyboard visible, but is not possible to do scroll or expand a menu. To do it, you must hide the keyboard first.
 
 By default, TabletWM uses the currently active layout for the physical keyboard. But is possible to edit the file /etc/tabletwm/tabletwm.cfg and set a desired keyboard layout (example: es). This layout will be loaded by TabletWM at startup with setxkbmap.
 

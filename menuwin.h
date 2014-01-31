@@ -41,7 +41,7 @@
 
 // (((c*1.2)>1.0) ? (1.0) : (c*1.2))
 #define ADD_COMPONENT(c) (c)
-#define SUB_COMPONENT(c) (c*0.8)
+#define SUB_COMPONENT(c) (c*0.9)
 
 void menuwin_init();
 void menuwin_set_window();

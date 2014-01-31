@@ -740,9 +740,9 @@ void menuwin_paint_button(cairo_t *cr,int xo, int yo, int wo, int ho, float r, f
 void menuwin_grab_mouse() {
 
 	if (key_win.mouse_grabed==0) {
-		uint16_t mask=XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_LEAVE_WINDOW;
 		xcb_grab_pointer_cookie_t grab_cookie;
 		xcb_grab_pointer_reply_t *grab_reply;
+		uint16_t mask=XCB_EVENT_MASK_BUTTON_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_LEAVE_WINDOW;
 
 		grab_cookie=xcb_grab_pointer(conn,1,key_win.window,mask,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC,XCB_WINDOW_NONE,XCB_CURSOR_NONE,XCB_CURRENT_TIME);
 		xcb_flush(conn);
@@ -754,11 +754,13 @@ void menuwin_grab_mouse() {
 	}
 }
 
-void menuwin_ungrab_mouse() {
+void menuwin_ungrab_mouse(char do_flush) {
 
 	if (key_win.mouse_grabed==1) {
 		xcb_ungrab_pointer(conn,XCB_CURRENT_TIME);
-		xcb_flush(conn);
+		if (do_flush) {
+			xcb_flush(conn);
+		}
 		key_win.mouse_grabed=0;
 	}
 }
@@ -785,14 +787,14 @@ void menuwin_set_window() {
 				v[1]=(KEYS_H_DIVISOR-5)*height/KEYS_H_DIVISOR;
 			}
 		} else {
-			menuwin_ungrab_mouse();
+			menuwin_ungrab_mouse(1);
 			v[0]=0;
 			v[1]=(KEYS_H_DIVISOR-1)*height/KEYS_H_DIVISOR;
 			v[2]=width;
 			v[3]=height/KEYS_H_DIVISOR;
 		}
 	} else {
-		menuwin_ungrab_mouse();
+		menuwin_ungrab_mouse(1);
 		v[0]=0;
 		v[1]=height-1;
 		v[2]=width;
@@ -805,7 +807,24 @@ void menuwin_set_window() {
 	menuwin_expose(NULL);
 }
 
+void emulate_click(int x, int y) {
+
+	menuwin_ungrab_mouse(0);
+	xcb_test_fake_input(conn,XCB_BUTTON_PRESS,1,XCB_CURRENT_TIME,XCB_NONE,x,y,0);
+	xcb_test_fake_input(conn,XCB_BUTTON_RELEASE,1,XCB_CURRENT_TIME,XCB_NONE,x,y,0);
+	menuwin_grab_mouse();
+}
+
 void menuwin_press_key_at(int x, int y) {
+
+	if (y<0) {
+		emulate_click(x,y+height);
+		return;
+	}
+	if (y>key_win.height) {
+		emulate_click(x,y);
+		return;
+	}
 
 	x=(x*KEYS_PER_ROW)/width;
 	y=((key_win.height-y)*KEYS_H_DIVISOR)/height;

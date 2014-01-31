@@ -690,24 +690,39 @@ void menuwin_paint_buttons(cairo_t *cr) {
 	menuwin_paint_launcher(cr);
 }
 
-void menuwin_paint_button(cairo_t *cr,int x, int y, int w, int h, float r, float g, float b) {
-
-	// coordinates and size are in width/KEYS_H_DIVISOR and height/KEYS_H_DIVISOR units
-	// 0,0 is bottom-left
-
-	x=(x*width)/KEYS_PER_ROW;
-	y=key_win.height-(((y+1)*height)/KEYS_H_DIVISOR);
-	w=(w*width)/KEYS_PER_ROW;
-	h=(h*height)/KEYS_H_DIVISOR;
-	float scale;
-
-	cairo_set_source_rgb(cr,r,g,b);
+void menuwin_trace_button(cairo_t *cr,float x, float y, float w, float h) {
 	cairo_move_to(cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
 	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
 	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,0,M_PI2);
 	cairo_arc(cr,x+BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI2,M_PI);
 	cairo_arc(cr,x+BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI,M_PI32);
+}
+
+void menuwin_paint_button(cairo_t *cr,int xo, int yo, int wo, int ho, float r, float g, float b) {
+
+	// coordinates and size are in width/KEYS_H_DIVISOR and height/KEYS_H_DIVISOR units
+	// 0,0 is bottom-left
+
+	float x=1.0+(xo*width)/KEYS_PER_ROW;
+	float y=key_win.height-(((yo+1)*height)/KEYS_H_DIVISOR);
+	float w=((((xo+wo)*width)/KEYS_PER_ROW)-x)-2.0;
+	float h=(ho*height)/KEYS_H_DIVISOR;
+	float scale;
+
+	cairo_pattern_t *pattern;
+
+	pattern = cairo_pattern_create_linear (x,y+BUTTON_MARGIN, x, y+h-BUTTON_E_RADIUS);
+	cairo_pattern_add_color_stop_rgb(pattern,0.0,SUB_COMPONENT(r),SUB_COMPONENT(g),SUB_COMPONENT(b));
+	cairo_pattern_add_color_stop_rgb(pattern,0.25,ADD_COMPONENT(r),ADD_COMPONENT(g),ADD_COMPONENT(b));
+	cairo_pattern_add_color_stop_rgb(pattern,0.45,ADD_COMPONENT(r),ADD_COMPONENT(g),ADD_COMPONENT(b));
+	cairo_pattern_add_color_stop_rgb(pattern,1.0,SUB_COMPONENT(r),SUB_COMPONENT(g),SUB_COMPONENT(b));
+	cairo_set_source(cr,pattern);
+	menuwin_trace_button(cr,x,y,w,h);
 	cairo_fill(cr);
+	cairo_set_source_rgb(cr,0,0,0);
+	cairo_set_line_width(cr,0.5);
+	menuwin_trace_button(cr,x,y,w,h);
+	cairo_stroke(cr);
 
 	cairo_save(cr);
 	cairo_translate(cr,x+w/2,y+h/2);

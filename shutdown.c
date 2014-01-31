@@ -97,6 +97,14 @@ void shutdown_hide() {
 	}
 }
 
+void shutdown_trace_button(cairo_t *cr,int x, int y, int w, int h) {
+	cairo_move_to(cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
+	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
+	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,0,M_PI2);
+	cairo_arc(cr,x+BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI2,M_PI);
+	cairo_arc(cr,x+BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI,M_PI32);
+}
+
 void shutdown_paint_button(cairo_t *cr,int x, int y, int w, int h, int rows, int columns, float r, float g, float b) {
 
 	x=(x*shutdown_win.width)/columns;
@@ -106,12 +114,12 @@ void shutdown_paint_button(cairo_t *cr,int x, int y, int w, int h, int rows, int
 	float scale;
 	
 	cairo_set_source_rgb(cr,r,g,b);
-	cairo_move_to(cr,x+BUTTON_E_RADIUS,y+BUTTON_MARGIN);
-	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI32,0);
-	cairo_arc(cr,x+w-BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,0,M_PI2);
-	cairo_arc(cr,x+BUTTON_E_RADIUS,y+h-BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI2,M_PI);
-	cairo_arc(cr,x+BUTTON_E_RADIUS,y+BUTTON_E_RADIUS,BUTTON_RADIUS,M_PI,M_PI32);
+	shutdown_trace_button(cr,x,y,w,h);
 	cairo_fill(cr);
+	cairo_set_source_rgb(cr,0,0,0);
+	cairo_set_line_width(cr,0.5);
+	shutdown_trace_button(cr,x,y,w,h);
+	cairo_stroke(cr);
 
 	cairo_save(cr);
 	cairo_translate(cr,x+w/2,y+h/2);

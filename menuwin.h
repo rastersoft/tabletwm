@@ -33,11 +33,15 @@
 // BUTTON_E_RADIUS=BUTTON_MARGIN+BUTTON_RADIUS
 #define BUTTON_E_RADIUS 6
 
-#define KEYS_PER_ROW 12
+#define KEYS_PER_ROW 12.0
 #define KEYS_FONT_SIZE 1.2
 #define KEYS_JUMP_FONT_SIZE 0.8
 #define KEYS_TEXT_FONT_SIZE 0.8
-#define KEYS_H_DIVISOR 12
+#define KEYS_H_DIVISOR 12.0
+
+// (((c*1.2)>1.0) ? (1.0) : (c*1.2))
+#define ADD_COMPONENT(c) (c)
+#define SUB_COMPONENT(c) (c*0.8)
 
 void menuwin_init();
 void menuwin_set_window();

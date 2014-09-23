@@ -196,7 +196,8 @@ void shutdown_press(uint16_t x,uint16_t y) {
 	if (x<(width/4)) {
 		shutdown_hide();
 	} else {
-		system("/sbin/halt");
+        // use systemd command for power off
+		system("systemctl poweroff");
 	}
 
 }

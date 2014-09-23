@@ -1,0 +1,11 @@
+[Unit]
+Description=Launch X11
+
+[Service]
+Type=simple
+User=debian
+ExecStart=/usr/bin/startx
+ExecStop=killall xinit
+
+[Install]
+WantedBy=multi-user.target

@@ -198,6 +198,7 @@ void shutdown_press(uint16_t x,uint16_t y) {
 	} else {
         // use systemd command for power off
 		system("systemctl poweroff");
+		exit(0);
 	}
 
 }

@@ -50,7 +50,7 @@ int main() {
 //	bindtextdomain (PACKAGE, LOCALEDIR);
 //	textdomain (PACKAGE);
 
-	printf("TabletWM version 0.25\n");
+	printf("TabletWM version 0.26\n");
 
 	init_tabletwm();
 

@@ -32,9 +32,9 @@ void init_load_config() {
 	char string[300];
 	char *text;
 	int retval;
-	
+
 	FILE *cfile;
-	
+
 	sprintf(string,"%s/%s",BASE_CONFIG_DIR,CONFIG_FILE);
 	cfile=fopen(string,"r");
 	if (cfile==NULL) {
@@ -128,7 +128,7 @@ void init_tabletwm() {
 		"_NET_WM_ACTION_CLOSE",
 		"_NET_WM_ACTION_ABOVE",
 		"_NET_WM_ACTION_BELOW",
-		
+
 		"WM_CLASS",
 		"WM_STATE",
 		"_NET_ACTIVE_WINDOW",
@@ -152,7 +152,7 @@ void init_tabletwm() {
 	xcb_depth_iterator_t depth_iter;
 	xcb_visualid_t    root_visual = { 0 };
 	visual_type = NULL;
-	
+
 	for (depth_iter = xcb_screen_allowed_depths_iterator (scr); depth_iter.rem; xcb_depth_next (&depth_iter)) {
 		xcb_visualtype_iterator_t visual_iter;
 
@@ -255,7 +255,6 @@ void init_tabletwm() {
 void destroy_tabletwm() {
 
 	shutdown_destroy();
-
 	wincache_destroy_element(key_win.window);
 	destroy_keycodes();
 	xcb_destroy_window(conn,key_win.window);

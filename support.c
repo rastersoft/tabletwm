@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
- 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,16 +38,16 @@ void support_capture_key(uint32_t mods,uint32_t key) {
 void support_calculate_new_size(xcb_window_t window, struct support_new_size *size) {
 
 	/* The caller must fill the SIZE structure with the current known values, and this function will change them, if needed */
-	
+
 	uint8_t what_to_do; // 0: maximize always; 1: maximize if resizable, center if not; 2: reduce to screen size if bigger, center if not; 3: leave as-is
-	
+
 	struct wincache_element *element;
-	
+
 	element=wincache_add_element(window);
 	if (element==NULL) {
 		return;
 	}
-	
+
 	if (element->mapped==0) {
 		if (size->new_w) {
 			element->cur_width=size->w;
@@ -56,7 +56,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 			element->cur_height=size->h;
 		}
 	}
-	
+
 	if ((element->filled==0)||(element->mapped==0)) {
 		return;
 	}
@@ -106,7 +106,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 				size->x=nx;
 				size->force_change=1;
 			}
-			
+
 			if (size->new_h) {
 				ny=(height-size->h)/2;
 			} else {
@@ -147,7 +147,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		if (!size->new_w) {
 			size->w=element->cur_width;
 		}
-		
+
 		if (size->w>width) { // if size is bigger than the screen, resize to the screen
 			size->new_x=1;
 			size->x=0;
@@ -246,7 +246,7 @@ void support_next_window(int next_app) {
 	uint32_t window_type_i;
 	xcb_window_t *wp;
 	uint32_t final_window=XCB_WINDOW_NONE;
-	
+
 	struct wincache_element *element,*current_window;
 
 	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
@@ -268,12 +268,12 @@ void support_next_window(int next_app) {
 			break; // this is the current top window
 		}
 	}
-	
+
 	if (current_window==NULL) {
 		free(r);
 		return;
 	}
-	
+
 	for(i=0;i<r->children_len;i++) {
 		element=wincache_find_element(wp[i]);
 		if (element==NULL) {
@@ -294,7 +294,7 @@ void support_next_window(int next_app) {
 		}
 		element=NULL;
 	}
-	
+
 	if (element!=NULL) {
 		const static uint32_t value[] = { XCB_STACK_MODE_ABOVE };
 		/* Move the window to the top of the stack */
@@ -314,7 +314,7 @@ void support_close_window() {
 
 	struct wincache_element *element;
 	xcb_window_t window;
-	
+
 	/* delete window */
 	xcb_query_tree_reply_t *reply=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
 	if(!reply) {
@@ -327,7 +327,7 @@ void support_close_window() {
 		/* find top-most mapped top-level window, and WM_DELETE_WINDOW it */
 		i--;
 		window=wp[i];
-		
+
 		element=wincache_find_element(window);
 		if (element==NULL) {
 			continue;
@@ -360,7 +360,7 @@ void support_set_focus() {
 	uint32_t window_type_i;
 	xcb_window_t window;
 	uint32_t final_window=XCB_WINDOW_NONE;
-	
+
 	struct wincache_element *element;
 
 #ifdef DEBUG
@@ -377,7 +377,7 @@ void support_set_focus() {
 	while(i) {
 		i--;
 		window=wp[i];
-		
+
 		element=wincache_find_element(window);
 		if (element==NULL) {
 			continue;
@@ -403,12 +403,12 @@ void support_set_focus() {
 void support_launch_manager() {
 
 	int f;
-	
+
 	uint32_t window;
 	uint32_t value;
-	
+
 	window=wincache_find_launcher_window();
-	
+
 	if (window==0) { // the launcher has not been launched yet; launch it
 		f=fork();
 		if (f==0) {

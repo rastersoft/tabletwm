@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
- 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -1094,9 +1094,9 @@ void menuwin_expose(xcb_expose_event_t *ee) {
 
 	cairo_surface_t *surface_tmp;
 	cairo_t *cr;
-	
+
 	surface_tmp = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, key_win.width, key_win.height);
-	
+
 	cr = cairo_create (surface_tmp);
 
 	cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
@@ -1109,7 +1109,7 @@ void menuwin_expose(xcb_expose_event_t *ee) {
 	}
 	menuwin_paint_clock(cr);
 	menuwin_paint_batery(cr);
-	
+
 	cairo_t *cr_screen=cairo_create(key_win.surface);
 	cairo_set_source_surface(cr_screen,surface_tmp,0.0,0.0);
 	cairo_paint(cr_screen);

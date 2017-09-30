@@ -64,7 +64,7 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 		if (element->mapped==0) {
 			continue;
 		}
-		
+
 		memset(&sizes,0,sizeof(struct support_new_size));
 		sizes.w=element->cur_width;
 		sizes.h=element->cur_height;
@@ -198,8 +198,8 @@ void action_configure_notify(xcb_generic_event_t *e) {
 
 void action_configure_request(xcb_generic_event_t *e) {
 
-	xcb_configure_request_event_t *ee=(xcb_configure_request_event_t *)e;
-	
+	xcb_configure_request_event_t *ee = (xcb_configure_request_event_t *)e;
+
 	uint32_t v[7];
 	int i;
 	int nx,ny,nw,nh;
@@ -235,7 +235,7 @@ void action_configure_request(xcb_generic_event_t *e) {
 	// first, configure the window with the desired values, to ensure that the app will reveive a CONFIGURE_NOTIFICATION
 	xcb_configure_window(conn,ee->window,ee->value_mask,v);
 	xcb_flush(conn);
-	
+
 	support_calculate_new_size(ee->window,&sizes);
 
 	i=0;
@@ -310,7 +310,7 @@ void action_mouse_leave(xcb_generic_event_t *e) {
 void action_mouse_click(xcb_generic_event_t *e) {
 
 	struct xcb_button_press_event_t *ee=(struct xcb_button_press_event_t *)e;
-	
+
 	if (ee->event==key_win.window) {
 		menuwin_press_key_at(ee->event_x,ee->event_y);
 	}
@@ -322,16 +322,16 @@ void action_mouse_click(xcb_generic_event_t *e) {
 void action_key(xcb_generic_event_t *e) {
 
 	xcb_key_press_event_t *ee=(xcb_key_press_event_t *)e;
-#ifdef DEBUG	
+#ifdef DEBUG
 	printf("Key capture: %d %X\n",ee->detail,ee->state);
 #endif
-	
+
 	// Alt+F4
 	if ((ee->detail==70)&&(ee->state&XCB_MOD_MASK_1)) {
 		support_close_window();
 		return;
 	}
-	
+
 	// Ctrl+TAB
 	if ((ee->detail==23)&&(ee->state&XCB_MOD_MASK_CONTROL)) {
 		support_next_window(0);

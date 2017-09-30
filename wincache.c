@@ -87,7 +87,7 @@ struct wincache_element *wincache_add_element(uint32_t window) {
 void wincache_destroy_element(uint32_t window) {
 
 	struct wincache_element *element;
-	
+
 	element=wincache_find_element(window);
 	if (element) {
 		element->prev->next=element->next;
@@ -103,12 +103,12 @@ void wincache_destroy_element(uint32_t window) {
 struct wincache_element *wincache_fill_element(uint32_t window) {
 
 	struct wincache_element *element;
-	
+
 	element=wincache_add_element(window);
 	if (!element) {
 		return NULL;
 	}
-	
+
 	// check if it is already filled
 	if (element->filled) {
 		return element;
@@ -116,7 +116,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 #ifdef DEBUG
 	printf("Filling %d\n",window);
 #endif
-	
+
 	xcb_get_property_cookie_t window_type_cookie;
 	xcb_get_property_cookie_t transient_for_cookie;
 	xcb_get_property_cookie_t normal_hints_cookie;
@@ -132,7 +132,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	xcb_get_property_reply_t *wmclass;
 	xcb_get_property_reply_t *window_hints;
 	xcb_get_geometry_reply_t *geometry;
-	
+
 	transient_for_cookie   = xcb_get_property(conn,0,window,atoms[TWM_ATOM_WM_TRANSIENT_FOR],XCB_ATOM_WINDOW,0,1);
 	window_type_cookie     = xcb_get_property(conn,0,window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,0,1);
 	wmclass_cookie         = xcb_icccm_get_wm_class_unchecked(conn,window);
@@ -142,7 +142,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	geometry_cookie        = xcb_get_geometry(conn,window);
 
 	xcb_flush(conn);
-	
+
 	transient_for = xcb_get_property_reply(conn,transient_for_cookie,0);
 	if ((transient_for)&&(transient_for->length!=0)) {
 		element->is_transient = 1;
@@ -162,7 +162,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 #endif
 	}
 	free(window_type);
-	
+
 	wmclass = xcb_get_property_reply(conn,wmclass_cookie,0);
 	xcb_icccm_get_wm_class_reply_t wmclass_data;
 	if (wmclass) {
@@ -217,7 +217,7 @@ struct wincache_element *wincache_fill_element(uint32_t window) {
 	free(size_hints);
 
 	window_hints = xcb_get_property_reply(conn,hints_cookie,0);
-	
+
 	element->input_flag=1;
 	if ((window_hints)&&(window_hints->length>1)) {
 		uint32_t *data=((uint32_t *)(xcb_get_property_value(window_hints)));
@@ -242,7 +242,7 @@ uint32_t wincache_find_launcher_window() {
 
 	char *p,*q,*final;
 	struct wincache_element *element;
-	
+
 	p=q=launcher_program;
 	for(;*p;p++) {
 		if(*p=='/') {

@@ -79,9 +79,9 @@ int main() {
 
 	xcb_flush(conn);
 	xcb_generic_event_t *e;
-	
+
 	keep_running=1;
-	
+
 	support_launch_manager();
 	fd = xcb_get_file_descriptor(conn);
 	while(keep_running) {
@@ -99,7 +99,7 @@ int main() {
 		}
 		while(e=xcb_poll_for_event(conn)) {
 			uint8_t r=e->response_type&~0x80;
-		
+
 			if (r>=xrandr) {
 				printf("XRandR\n");
 				switch(r-xrandr) {

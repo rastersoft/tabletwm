@@ -34,7 +34,7 @@ void shutdown_init() {
 	xcb_void_cookie_t void_cookie;
 
 	shutdown_win.surface=NULL;
-	
+
 	shutdown_win.window = xcb_generate_id(conn);
 	uint32_t values[1] = {XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_BUTTON_RELEASE};
 
@@ -112,7 +112,7 @@ void shutdown_paint_button(cairo_t *cr,int x, int y, int w, int h, int rows, int
 	w=(w*shutdown_win.width)/columns;
 	h=(h*shutdown_win.height)/rows;
 	float scale;
-	
+
 	cairo_set_source_rgb(cr,r,g,b);
 	shutdown_trace_button(cr,x,y,w,h);
 	cairo_fill(cr);
@@ -167,9 +167,9 @@ void shutdown_paint_ok(cairo_t *cr) {
 void shutdown_expose() {
 
 	if (shutdown_win.cache->mapped==1) {
-	
+
 		cairo_text_extents_t te;
-	
+
 		cairo_t *cr=cairo_create(shutdown_win.surface);
 		cairo_select_font_face(cr,"sans-serif",CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_set_font_size(cr,18);

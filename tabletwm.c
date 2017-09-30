@@ -35,7 +35,9 @@
 #include "globals.h"
 #include "init.h"
 #include "actions.h"
-
+#include "support.h"
+#include "actions.h"
+#include "menuwin.h"
 
 int main() {
 

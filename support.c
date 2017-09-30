@@ -20,10 +20,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "support.h"
 #include "globals.h"
 #include "wincache.h"
+#include "menuwin.h"
 
 void support_capture_key(uint32_t mods,uint32_t key) {
 

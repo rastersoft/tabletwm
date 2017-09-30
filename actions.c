@@ -27,6 +27,7 @@
 #include "support.h"
 #include "wincache.h"
 #include "menuwin.h"
+#include "shutdown.h"
 
 void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 
@@ -37,18 +38,18 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 	 */
 
 	struct wincache_element *element;
-	xcb_randr_screen_change_notify_event_t *ee=(xcb_randr_screen_change_notify_event_t *)e;
-	if ((ee->rotation==XCB_RANDR_ROTATION_ROTATE_90)||(ee->rotation==XCB_RANDR_ROTATION_ROTATE_270)) {
-		width=ee->height;
-		height=ee->width;
+	xcb_randr_screen_change_notify_event_t *ee = (xcb_randr_screen_change_notify_event_t *)e;
+	if ((ee->rotation == XCB_RANDR_ROTATION_ROTATE_90) || (ee->rotation == XCB_RANDR_ROTATION_ROTATE_270)) {
+		width = ee->height;
+		height = ee->width;
 	} else {
-		width=ee->width;
-		height=ee->height;
+		width = ee->width;
+		height = ee->height;
 	}
-	printf("width: %d height: %d rotation: %d root: %d request_window: %d\n",width,height,ee->rotation,ee->root, ee->request_window);
-	xcb_query_tree_reply_t *r=xcb_query_tree_reply(conn,xcb_query_tree(conn,scr->root),0);
-	xcb_window_t *wp=xcb_query_tree_children(r);
-	uint16_t i=r->children_len;
+	printf("width: %d height: %d rotation: %d root: %d request_window: %d\n", width, height, ee->rotation, ee->root, ee->request_window);
+	xcb_query_tree_reply_t *r = xcb_query_tree_reply(conn, xcb_query_tree(conn, scr->root), 0);
+	xcb_window_t *wp = xcb_query_tree_children(r);
+	uint16_t i = r->children_len;
 	struct support_new_size sizes;
 	uint32_t flags;
 	int loop;
@@ -56,44 +57,44 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 
 	while(i) {
 		i--;
-		xcb_window_t w=wp[i];
-		element=wincache_find_element(w);
+		xcb_window_t w = wp[i];
+		element = wincache_find_element(w);
 		if (!element) {
 			continue;
 		}
-		if (element->mapped==0) {
+		if (element->mapped == 0) {
 			continue;
 		}
 
-		memset(&sizes,0,sizeof(struct support_new_size));
-		sizes.w=element->cur_width;
-		sizes.h=element->cur_height;
+		memset(&sizes, 0, sizeof(struct support_new_size));
+		sizes.w = element->cur_width;
+		sizes.h = element->cur_height;
 		sizes.new_w=1;
 		sizes.new_h=1;
 
-		support_calculate_new_size(w,&sizes);
+		support_calculate_new_size(w, &sizes);
 
 		/* set window size and position if needed */
-		flags=0;
-		loop=0;
+		flags = 0;
+		loop = 0;
 		if (sizes.new_x) {
-			v[loop++]=sizes.x;
-			flags|=XCB_CONFIG_WINDOW_X;
+			v[loop++] = sizes.x;
+			flags |= XCB_CONFIG_WINDOW_X;
 		}
 		if (sizes.new_y) {
-			v[loop++]=sizes.y;
-			flags|=XCB_CONFIG_WINDOW_Y;
+			v[loop++] = sizes.y;
+			flags |= XCB_CONFIG_WINDOW_Y;
 		}
 		if (sizes.new_w) {
-			v[loop++]=sizes.w;
-			flags|=XCB_CONFIG_WINDOW_WIDTH;
+			v[loop++] = sizes.w;
+			flags |= XCB_CONFIG_WINDOW_WIDTH;
 		}
 		if (sizes.new_h) {
-			v[loop++]=sizes.h;
-			flags|=XCB_CONFIG_WINDOW_HEIGHT;
+			v[loop++] = sizes.h;
+			flags |= XCB_CONFIG_WINDOW_HEIGHT;
 		}
 		if (flags) {
-			xcb_configure_window(conn,w,flags,v);
+			xcb_configure_window(conn, w, flags, v);
 		}
 	}
 	menuwin_set_window();

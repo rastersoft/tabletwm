@@ -6,33 +6,9 @@ PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 DESTDIR=
 
-tabletwm: tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o shutdown.o
-	$(LN) -o tabletwm tabletwm.o globals.o init.o actions.o support.o wincache.o menuwin.o shutdown.o `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm xcb-keysyms xcb-xtest cairo xkbcommon`
+tabletwm: actions.o globals.o init.o menuwin.o shutdown.o support.o tabletwm.o wincache.o 
+	$(LN) -o tabletwm actions.o globals.o init.o menuwin.o shutdown.o support.o tabletwm.o wincache.o  `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm xcb-keysyms xcb-xtest cairo xkbcommon`
 	strip tabletwm
-
-tabletwm.o: tabletwm.c globals.h init.h actions.h
-	$(CC) $(CFLAGS) -o tabletwm.o tabletwm.c `pkg-config --cflags xcb xcb-util xcb-randr cairo`
-
-globals.o: globals.c globals.h
-	$(CC) $(CFLAGS) -o globals.o globals.c `pkg-config --cflags xcb cairo`
-
-init.o: init.c init.h globals.h wincache.h shutdown.h
-	$(CC) $(CFLAGS) -o init.o init.c `pkg-config --cflags xcb cairo`
-
-actions.o: actions.c actions.h globals.h support.h wincache.h menuwin.h
-	$(CC) $(CFLAGS) -o actions.o actions.c `pkg-config --cflags xcb cairo`
-
-support.o: support.c support.h globals.h wincache.h
-	$(CC) $(CFLAGS) -o support.o support.c `pkg-config --cflags xcb xcb-icccm cairo`
-	
-wincache.o: wincache.c wincache.h globals.h
-	$(CC) $(CFLAGS) -o wincache.o wincache.c `pkg-config --cflags xcb cairo`
-
-menuwin.o: menuwin.c menuwin.h globals.h
-	$(CC) $(CFLAGS) -o menuwin.o menuwin.c `pkg-config --cflags xcb xcb-keysyms xcb-xtest cairo xkbcommon`
-
-shutdown.o: shutdown.c shutdown.h globals.h
-	$(CC) $(CFLAGS) -o shutdown.o shutdown.c `pkg-config --cflags xcb cairo`
 
 clean:
 	rm -f *.o tabletwm
@@ -53,3 +29,29 @@ install-init:
 
 uninstall:
 	rm -rf $(DESTDIR)$(BINDIR)/tabletwm
+
+
+actions.o: actions.c shutdown.h menuwin.h wincache.h globals.h support.h actions.h
+	$(CC) -o actions.o actions.c
+
+globals.o: globals.c globals.h
+	$(CC) -o globals.o globals.c
+
+init.o: init.c shutdown.h menuwin.h wincache.h globals.h init.h
+	$(CC) -o init.o init.c
+
+menuwin.o: menuwin.c support.h globals.h wincache.h menuwin.h
+	$(CC) -o menuwin.o menuwin.c
+
+shutdown.o: shutdown.c shutdown.h menuwin.h wincache.h globals.h support.h actions.h
+	$(CC) -o shutdown.o shutdown.c
+
+support.o: support.c menuwin.h wincache.h globals.h support.h
+	$(CC) -o support.o support.c
+
+tabletwm.o: tabletwm.c menuwin.h actions.h support.h globals.h init.h
+	$(CC) -o tabletwm.o tabletwm.c
+
+wincache.o: wincache.c wincache.h globals.h
+	$(CC) -o wincache.o wincache.c
+

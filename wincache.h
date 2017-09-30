@@ -28,6 +28,7 @@ void wincache_init();
 struct wincache_element *wincache_find_element(uint32_t window);
 struct wincache_element *wincache_add_element(uint32_t window);
 struct wincache_element *wincache_fill_element(uint32_t window);
+void wincache_destroy_element(uint32_t window);
 uint32_t wincache_find_launcher_window();
 
 #endif // _H_WINCACHE_

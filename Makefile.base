@@ -1,0 +1,31 @@
+CC=gcc -c
+LN=gcc
+CFLAGS= -O2
+
+PREFIX=/usr/local
+BINDIR=$(PREFIX)/bin
+DESTDIR=
+
+tabletwm: %c
+	$(LN) -o tabletwm %c `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm xcb-keysyms xcb-xtest cairo xkbcommon`
+	strip tabletwm
+
+clean:
+	rm -f *.o tabletwm
+
+install:
+	install -d $(DESTDIR)$(BINDIR)
+	install -d $(DESTDIR)/etc/tabletwm.d
+	install -m 755 tabletwm $(DESTDIR)$(BINDIR)
+	install tabletwm.cfg.example $(DESTDIR)/etc/tabletwm.d/
+	install *.keymap $(DESTDIR)/etc/tabletwm.d/
+
+install-init:
+	install -d $(DESTDIR)/etc/init.d
+	install -d $(DESTDIR)/home/debian
+	install -m 755 tabletwm.init $(DESTDIR)/etc/init.d/tabletwm
+	install xinitrc $(DESTDIR)/home/debian/.xinitrc
+	update-rc.d tabletwm defaults
+
+uninstall:
+	rm -rf $(DESTDIR)$(BINDIR)/tabletwm

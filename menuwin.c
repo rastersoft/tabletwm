@@ -26,6 +26,7 @@
 #include "menuwin.h"
 #include "globals.h"
 #include "wincache.h"
+#include "support.h"
 
 void destroy_keycodes() {
 

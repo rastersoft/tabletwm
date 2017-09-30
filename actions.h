@@ -29,6 +29,9 @@ void action_map_request(xcb_generic_event_t *e);
 void action_configure_request(xcb_generic_event_t *e);
 void action_key(xcb_generic_event_t *e);
 void action_expose(xcb_generic_event_t *e);
+void action_destroy_notify(xcb_generic_event_t *e);
+void action_configure_notify(xcb_generic_event_t *e);
+void action_mouse_click(xcb_generic_event_t *e);
 
 void action_mouse_leave(xcb_generic_event_t *e);
 void action_mouse_enter(xcb_generic_event_t *e);

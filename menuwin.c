@@ -683,7 +683,9 @@ void menuwin_paint_buttons(cairo_t *cr) {
 
 	menuwin_paint_close_button(cr);
 	if (key_win.has_keyboard&0x01) {
-		menuwin_paint_swap_button(cr);
+        if (key_win.resize_with_keyboard == 0) {
+		    menuwin_paint_swap_button(cr);
+        }
 		menuwin_paint_keyboard(cr);
 	}
 	menuwin_paint_change_app_button(cr);
@@ -771,21 +773,21 @@ void menuwin_set_window() {
 	uint32_t v[4];
 	uint32_t value_mask;
 
-	value_mask=XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
-	if (key_win.possition==1) {
-		if (key_win.has_keyboard&0x01) { // keyboard enabled?
+	value_mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+	if (key_win.possition == 1) {
+		if (key_win.has_keyboard & 0x01) { // keyboard enabled?
 			// Grab the mouse to avoid other windows to receive events
 
 			menuwin_grab_mouse();
 
-			v[2]=width;
-			v[3]=5*height/KEYS_H_DIVISOR;
-			if (key_win.has_keyboard&0x02) { // keyboard on top?
-				v[0]=0;
-				v[1]=0;
+			v[2] = width;
+			v[3] = 5 * height / KEYS_H_DIVISOR;
+			if (key_win.has_keyboard & 0x02) { // keyboard on top?
+				v[0] = 0;
+				v[1] = 0;
 			} else {
-				v[0]=0;
-				v[1]=(KEYS_H_DIVISOR-5)*height/KEYS_H_DIVISOR;
+				v[0] = 0;
+				v[1] = (KEYS_H_DIVISOR - 5) * height / KEYS_H_DIVISOR;
 			}
 		} else {
 			menuwin_ungrab_mouse(1);
@@ -836,8 +838,8 @@ void menuwin_press_key_at(int x, int y) {
 			support_close_window();
 		break;
 		case 5:
-			if (key_win.has_keyboard&0x01) {
-				key_win.has_keyboard^=0x02;
+			if ((key_win.has_keyboard & 0x01) && (key_win.resize_with_keyboard == 0)) {
+				key_win.has_keyboard ^= 0x02;
 				menuwin_set_window();
 			}
 		break;
@@ -1091,14 +1093,14 @@ void menuwin_paint_clock(cairo_t *cr) {
 
 void menuwin_expose(xcb_expose_event_t *ee) {
 
-	key_win.wait_for=0;
+	key_win.wait_for = 0;
 
 	cairo_surface_t *surface_tmp;
 	cairo_t *cr;
 
-	surface_tmp = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, key_win.width, key_win.height);
+	surface_tmp = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, key_win.width, key_win.height);
 
-	cr = cairo_create (surface_tmp);
+	cr = cairo_create(surface_tmp);
 
 	cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(cr, 1.2);
@@ -1111,7 +1113,7 @@ void menuwin_expose(xcb_expose_event_t *ee) {
 	menuwin_paint_clock(cr);
 	menuwin_paint_batery(cr);
 
-	cairo_t *cr_screen=cairo_create(key_win.surface);
+	cairo_t *cr_screen = cairo_create(key_win.surface);
 	cairo_set_source_surface(cr_screen, surface_tmp, 0.0, 0.0);
 	cairo_paint(cr_screen);
 	xcb_flush(conn);

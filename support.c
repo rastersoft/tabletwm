@@ -28,6 +28,67 @@
 #include "wincache.h"
 #include "menuwin.h"
 
+void support_resize_all_windows() {
+
+    struct wincache_element *element;
+    xcb_query_tree_reply_t *r = xcb_query_tree_reply(conn, xcb_query_tree(conn, scr->root), 0);
+    xcb_window_t *wp = xcb_query_tree_children(r);
+    uint16_t i = r->children_len;
+    struct support_new_size sizes;
+    uint32_t flags;
+    int loop;
+    uint32_t v[4];
+
+    while(i) {
+        i--;
+        xcb_window_t w = wp[i];
+        if (w == key_win.window) {
+            continue; // don't resize the menu window
+        }
+        element = wincache_find_element(w);
+        if (!element) {
+            continue;
+        }
+        if (element->mapped == 0) {
+            continue;
+        }
+
+        memset(&sizes, 0, sizeof(struct support_new_size));
+        sizes.w = element->cur_width;
+        sizes.h = element->cur_height;
+        sizes.new_w = 1;
+        sizes.new_h = 1;
+
+        support_calculate_new_size(w, &sizes);
+
+        /* set window size and position if needed */
+        flags = 0;
+        loop = 0;
+        if (sizes.new_x) {
+            v[loop++] = sizes.x;
+            flags |= XCB_CONFIG_WINDOW_X;
+        }
+        if (sizes.new_y) {
+            v[loop++] = sizes.y;
+            flags |= XCB_CONFIG_WINDOW_Y;
+        }
+        if (sizes.new_w) {
+            v[loop++] = sizes.w;
+            flags |= XCB_CONFIG_WINDOW_WIDTH;
+        }
+        if (sizes.new_h) {
+            v[loop++] = sizes.h;
+            flags |= XCB_CONFIG_WINDOW_HEIGHT;
+        }
+        if (flags) {
+            xcb_configure_window(conn, w, flags, v);
+        }
+    }
+    menuwin_set_window();
+    xcb_flush(conn);
+    free(r);
+}
+
 void support_capture_key(uint32_t mods,uint32_t key) {
 
 	xcb_grab_key(conn,0,scr->root,mods,key,XCB_GRAB_MODE_ASYNC,XCB_GRAB_MODE_ASYNC); // key itself
@@ -43,7 +104,7 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	/* The caller must fill the SIZE structure with the current known values, and this function will change them, if needed */
 
 	uint8_t what_to_do; // 0: maximize always; 1: maximize if resizable, center if not; 2: reduce to screen size if bigger, center if not; 3: leave as-is
-
+    int winheight;
 	struct wincache_element *element;
 
 	element=wincache_add_element(window);
@@ -51,74 +112,80 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 		return;
 	}
 
-	if (element->mapped==0) {
+	if (element->mapped == 0) {
 		if (size->new_w) {
-			element->cur_width=size->w;
+			element->cur_width = size->w;
 		}
 		if (size->new_h) {
-			element->cur_height=size->h;
+			element->cur_height = size->h;
 		}
 	}
 
-	if ((element->filled==0)||(element->mapped==0)) {
+	if ((element->filled == 0) || (element->mapped == 0)) {
 		return;
 	}
 
-	if ((element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_UTILITY])) {
-			what_to_do=0;
+	if ((element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DESKTOP])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_UTILITY])) {
+			what_to_do = 0;
 	} else if (
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NORMAL])) {
-			what_to_do=1;
-	} else if (element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_SPLASH]) {
-			what_to_do=2;
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DIALOG])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NORMAL])) {
+			what_to_do = 1;
+	} else if (element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_SPLASH]) {
+			what_to_do = 2;
 	} else if (
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLBAR])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_MENU])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DROPDOWN_MENU])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_POPUP_MENU])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLTIP])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NOTIFICATION])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_COMBO])||
-		(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DND])) {
-			what_to_do=3;
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLBAR])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_MENU])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DROPDOWN_MENU])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_POPUP_MENU])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_TOOLTIP])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_NOTIFICATION])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_COMBO])||
+		(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DND])) {
+			what_to_do = 3;
 	} else {
 		if (element->is_transient) {
-			what_to_do=2;
+			what_to_do = 2;
 		} else {
-			what_to_do=1;
+			what_to_do = 1;
 		}
 	}
+
+    if (key_win.resize_with_keyboard) {
+        winheight = height - (5 * height/KEYS_H_DIVISOR);
+    } else {
+        winheight = height;
+    }
 
 	switch(what_to_do) {
 	case 1:
 #ifdef DEBUG
 		printf("Maximize if resizable; center if not\n");
 #endif
-		if (element->resizable==0) {
+		if (element->resizable == 0) {
 			int nx,ny;
 			if (size->new_w) {
-				nx=(width-size->w)/2;
+				nx = (width - size->w) / 2;
 			} else {
-				nx=(width-element->cur_width)/2;
+				nx = (width - element->cur_width) / 2;
 			}
-			if ((size->new_x==0)||(size->x!=nx)) {
-				size->new_x=1;
-				size->x=nx;
-				size->force_change=1;
+			if ((size->new_x == 0) || (size->x != nx)) {
+				size->new_x = 1;
+				size->x = nx;
+				size->force_change = 1;
 			}
 
 			if (size->new_h) {
-				ny=(height-size->h)/2;
+				ny = (winheight - size->h) / 2;
 			} else {
-				ny=(height-element->cur_height)/2;
+				ny = (winheight - element->cur_height) / 2;
 			}
-			if ((size->new_y==0)||(size->y!=ny)) {
-				size->new_y=1;
-				size->y=ny;
-				size->force_change=1;
+			if ((size->new_y == 0) || (size->y != ny) || (key_win.resize_with_keyboard != 0)) {
+				size->new_y = 1;
+				size->y = ny;
+				size->force_change = 1;
 			}
 			break;
 		}
@@ -127,64 +194,64 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 #ifdef DEBUG
 		printf("Maximize always\n");
 #endif
-		if ((size->new_x==0)||((size->new_x==1)&&(size->x!=0))) {
-			size->new_x=1;
-			size->x=0;
+		if ((size->new_x == 0) || ((size->new_x == 1) && (size->x != 0))) {
+			size->new_x = 1;
+			size->x = 0;
 		}
-		if ((size->new_y==0)||((size->new_y==1)&&(size->y!=0))) {
-			size->new_y=1;
-			size->y=0;
+		if ((size->new_y == 0) || ((size->new_y == 1) && (size->y != 0))) {
+			size->new_y = 1;
+			size->y = 0;
 		}
-		size->new_w=1;
-		size->new_h=1;
-		size->w=width;
-		size->h=height;
-		element->cur_width=size->w;
-		element->cur_height=size->h;
-		size->force_change=1;
+		size->new_w = 1;
+		size->new_h = 1;
+		size->w = width;
+		size->h = winheight;
+		element->cur_width = size->w;
+		element->cur_height = size->h;
+		size->force_change = 1;
 	break;
 	case 2:
 #ifdef DEBUG
 		printf("Reduce if bigger; center if not\n");
 #endif
 		if (!size->new_w) {
-			size->w=element->cur_width;
+			size->w = element->cur_width;
 		}
 
-		if (size->w>width) { // if size is bigger than the screen, resize to the screen
-			size->new_x=1;
-			size->x=0;
-			size->w=width;
-			element->cur_width=width;
-			size->force_change=1;
+		if (size->w > width) { // if size is bigger than the screen, resize to the screen
+			size->new_x = 1;
+			size->x = 0;
+			size->w = width;
+			element->cur_width = width;
+			size->force_change = 1;
 		} else { // if size is smaller, center in the screen
 			int nx;
-			nx=(width-size->w)/2;
-			element->cur_width=size->w;
-			if ((size->new_x==0)||(size->x!=nx)) {
-				size->new_x=1;
-				size->x=nx;
-				size->force_change=1;
+			nx = (width - size->w) / 2;
+			element->cur_width = size->w;
+			if ((size->new_x == 0) || (size->x != nx)) {
+				size->new_x = 1;
+				size->x = nx;
+				size->force_change = 1;
 			}
 		}
 
 		if (!size->new_h) {
-			size->h=element->cur_height;
+			size->h = element->cur_height;
 		}
-		if (size->h>height) {
-			size->new_y=1;
-			size->y=0;
-			size->h=height;
-			element->cur_height=height;
-			size->force_change=1;
+		if (size->h > winheight) {
+			size->new_y = 1;
+			size->y = 0;
+			size->h = winheight;
+			element->cur_height = winheight;
+			size->force_change = 1;
 		} else {
 			int ny;
-			ny=(height-size->h)/2;
-			element->cur_height=size->h;
-			if ((size->new_y==0)||(size->y!=ny)) {
-				size->new_y=1;
-				size->y=ny;
-				size->force_change=1;
+			ny= (winheight - size->h) / 2;
+			element->cur_height = size->h;
+			if ((size->new_y == 0) || (size->y != ny)) {
+				size->new_y = 1;
+				size->y = ny;
+				size->force_change = 1;
 			}
 		}
 	break;
@@ -197,11 +264,11 @@ void support_calculate_new_size(xcb_window_t window, struct support_new_size *si
 	break;
 	}
 #ifdef DEBUG
-	printf("New position: %d,%d; new size: %dx%d\n",size->x,size->y,size->w,size->h);
+	printf("New position: %d,%d; new size: %dx%d\n", size->x, size->y, size->w, size->h);
 #endif
 }
 
-void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
+void support_send_dock_up(xcb_query_tree_reply_t *r2, xcb_window_t *wp2) {
 
 	uint16_t i;
 	struct wincache_element *element;
@@ -231,9 +298,9 @@ void support_send_dock_up(xcb_query_tree_reply_t *r2,xcb_window_t *wp2) {
 		if (element==NULL) {
 			continue;
 		}
-		if ((element->mapped)&&(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+		if ((element->mapped)&&(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
 			value=XCB_STACK_MODE_ABOVE;
-			xcb_configure_window(conn,element->window,XCB_CONFIG_WINDOW_STACK_MODE,&value);
+			xcb_configure_window(conn, element->window, XCB_CONFIG_WINDOW_STACK_MODE, &value);
 		}
 	}
 	xcb_flush(conn);
@@ -282,7 +349,7 @@ void support_next_window(int next_app) {
 		if (element==NULL) {
 			continue;
 		}
-		if ((element->mapped==0)||(element->type==atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
+		if ((element->mapped==0)||(element->type == atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
 			element=NULL;
 			continue;
 		}

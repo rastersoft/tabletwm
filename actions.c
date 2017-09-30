@@ -37,7 +37,6 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 	 * maximize all currently mapped windows to new size
 	 */
 
-	struct wincache_element *element;
 	xcb_randr_screen_change_notify_event_t *ee = (xcb_randr_screen_change_notify_event_t *)e;
 	if ((ee->rotation == XCB_RANDR_ROTATION_ROTATE_90) || (ee->rotation == XCB_RANDR_ROTATION_ROTATE_270)) {
 		width = ee->height;
@@ -47,59 +46,7 @@ void action_xrandr_screen_change_notify(xcb_generic_event_t *e) {
 		height = ee->height;
 	}
 	printf("width: %d height: %d rotation: %d root: %d request_window: %d\n", width, height, ee->rotation, ee->root, ee->request_window);
-	xcb_query_tree_reply_t *r = xcb_query_tree_reply(conn, xcb_query_tree(conn, scr->root), 0);
-	xcb_window_t *wp = xcb_query_tree_children(r);
-	uint16_t i = r->children_len;
-	struct support_new_size sizes;
-	uint32_t flags;
-	int loop;
-	uint32_t v[4];
-
-	while(i) {
-		i--;
-		xcb_window_t w = wp[i];
-		element = wincache_find_element(w);
-		if (!element) {
-			continue;
-		}
-		if (element->mapped == 0) {
-			continue;
-		}
-
-		memset(&sizes, 0, sizeof(struct support_new_size));
-		sizes.w = element->cur_width;
-		sizes.h = element->cur_height;
-		sizes.new_w = 1;
-		sizes.new_h = 1;
-
-		support_calculate_new_size(w, &sizes);
-
-		/* set window size and position if needed */
-		flags = 0;
-		loop = 0;
-		if (sizes.new_x) {
-			v[loop++] = sizes.x;
-			flags |= XCB_CONFIG_WINDOW_X;
-		}
-		if (sizes.new_y) {
-			v[loop++] = sizes.y;
-			flags |= XCB_CONFIG_WINDOW_Y;
-		}
-		if (sizes.new_w) {
-			v[loop++] = sizes.w;
-			flags |= XCB_CONFIG_WINDOW_WIDTH;
-		}
-		if (sizes.new_h) {
-			v[loop++] = sizes.h;
-			flags |= XCB_CONFIG_WINDOW_HEIGHT;
-		}
-		if (flags) {
-			xcb_configure_window(conn, w, flags, v);
-		}
-	}
-	menuwin_set_window();
-	xcb_flush(conn);
-	free(r);
+	support_resize_all_windows();
 }
 
 void action_unmap_notify(xcb_generic_event_t *e) {
@@ -157,6 +104,7 @@ void action_map_request(xcb_generic_event_t *e) {
 	uint32_t v[4];
 	uint32_t flags = 0;
 	int loop = 0;
+
 	if (sizes.new_x) {
 		v[loop++] = sizes.x;
 		flags |= XCB_CONFIG_WINDOW_X;
@@ -346,7 +294,7 @@ void action_key(xcb_generic_event_t *e) {
 	}
 
 	// MENU with keyboard
-	if ((ee->detail == 135) && (ee->state & XCB_MOD_MASK_CONTROL) && (!(ee->state & XCB_MOD_MASK_1))) {
+	if ((ee->detail == 135) && (ee->state & XCB_MOD_MASK_CONTROL) && (!(ee->state & XCB_MOD_MASK_SHIFT)) && (!(ee->state & XCB_MOD_MASK_1))) {
 		key_win.enabled_by_mouse = 0;
 		key_win.possition = 1 - key_win.possition; // enable/disable the menu
 		if (key_win.possition) {
@@ -354,17 +302,42 @@ void action_key(xcb_generic_event_t *e) {
 		} else {
 			key_win.has_keyboard &= 2; // disable keyboard, but keep it where it was before
 		}
+		key_win.resize_with_keyboard = 0;
+		support_resize_all_windows();
 		support_send_dock_up(NULL, NULL);
 		menuwin_set_window();
+		return;
+	}
+
+	// MENU with keyboard resizing
+	if ((ee->detail == 135) && (!(ee->state & XCB_MOD_MASK_CONTROL)) && (ee->state & XCB_MOD_MASK_SHIFT) && (!(ee->state & XCB_MOD_MASK_1))) {
+		key_win.enabled_by_mouse = 0;
+		key_win.possition = 1 - key_win.possition; // enable/disable the menu
+		if (key_win.possition) {
+			key_win.has_keyboard |= 1; // enable keyboard, and put it where it was before
+		} else {
+			key_win.has_keyboard &= 2; // disable keyboard, but keep it where it was before
+		}
+		if (key_win.has_keyboard & 1) {
+			key_win.resize_with_keyboard = 1;
+		} else {
+			key_win.resize_with_keyboard = 0;
+		}
+		support_resize_all_windows();
+		support_send_dock_up(NULL, NULL);
+		menuwin_set_window();
+		return;
 	}
 
 	// MENU alone
-	if ((ee->detail == 135) && (!(ee->state & XCB_MOD_MASK_CONTROL)) && (!(ee->state & XCB_MOD_MASK_1))) {
+	if ((ee->detail == 135) && (!(ee->state & XCB_MOD_MASK_CONTROL)) && (!(ee->state & XCB_MOD_MASK_SHIFT)) && (!(ee->state & XCB_MOD_MASK_1))) {
+		key_win.resize_with_keyboard = 0;
 		key_win.has_keyboard &= 2; // disable keyboard, but remember where it was before
 		key_win.possition = 1 - key_win.possition; // enable/disable the menu
 		key_win.enabled_by_mouse = 0;
 		support_send_dock_up(NULL, NULL);
 		menuwin_set_window();
+		return;
 	}
 
 	// SHUTDOWN
@@ -372,6 +345,7 @@ void action_key(xcb_generic_event_t *e) {
 		if(shutdown_win.cache->mapped == 0) {
 			shutdown_show();
 		}
+		return;
 	}
 
 #ifdef DEBUG

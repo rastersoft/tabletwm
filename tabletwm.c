@@ -52,7 +52,7 @@ int main() {
 //	bindtextdomain (PACKAGE, LOCALEDIR);
 //	textdomain (PACKAGE);
 
-	printf("TabletWM version 0.26\n");
+	printf("TabletWM version %d.%d\n", VERSION_MAJOR, VERSION_MINOR);
 
 	init_tabletwm();
 
@@ -86,25 +86,26 @@ int main() {
 
 	support_launch_manager();
 	fd = xcb_get_file_descriptor(conn);
-	while(keep_running) {
+	while(keep_running) { // MAIN LOOP
+
 		poll_fd.fd=fd;
 		poll_fd.events=POLLIN;
 		poll_fd.revents=0;
 		if (key_win.possition!=0) {
-			retval = poll(&poll_fd,1,2000); // refresh every two seconds if the bar is visible
+			retval = poll(&poll_fd, 1, 2000); // refresh every two seconds if the bar is visible
 		} else {
-			retval = poll(&poll_fd,1,-1); // just wait for an event when the bar is not visible
+			retval = poll(&poll_fd, 1, -1); // just wait for an event when the bar is not visible
 		}
-		if (retval==0) {
+		if (retval == 0) {
 			menuwin_expose(NULL); // each 10 seconds of inactivity, refresh the user bar to keep the clock and indicators updated
 			continue;
 		}
-		while(e=xcb_poll_for_event(conn)) {
-			uint8_t r=e->response_type&~0x80;
+		while(e = xcb_poll_for_event(conn)) {
+			uint8_t r=e->response_type & ~0x80;
 
-			if (r>=xrandr) {
+			if (r >= xrandr) {
 				printf("XRandR\n");
-				switch(r-xrandr) {
+				switch(r - xrandr) {
 					case(XCB_RANDR_SCREEN_CHANGE_NOTIFY):
 						action_xrandr_screen_change_notify(e);
 					break;
@@ -155,7 +156,7 @@ int main() {
 						action_mouse_click(e);
 					break;
 					case(0): {
-						xcb_generic_error_t *ee=(xcb_generic_error_t *)e;
+						xcb_generic_error_t *ee = (xcb_generic_error_t *)e;
 						printf("error event type %d\n",ee->error_code);
 					}
 					break;

@@ -1,6 +1,7 @@
 HISTORY OF VERSIONS
 ===================
-
+* 0.27 (2017/10/01)
+   * Allows to resize the window when the screen keyboard is visible
 * 0.26 (2017/09/30)
    * Changes to allow to work with systemd
    * Now exits the window manager during shut down

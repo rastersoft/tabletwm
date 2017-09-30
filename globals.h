@@ -36,7 +36,7 @@
 #define BASE_CONFIG_DIR "/etc/tabletwm.d"
 
 enum TWM_ATOM_DEFS {
-	TWM_ATOM_WM_SIZE_HINTS=0,
+	TWM_ATOM_WM_SIZE_HINTS = 0,
 	TWM_ATOM_WM_NORMAL_HINTS,
 	TWM_ATOM_WM_PROTOCOLS,
 	TWM_ATOM_WM_DELETE_WINDOW,
@@ -159,8 +159,8 @@ struct key_element {
 };
 
 #ifndef M_PI
-#define M_PI           3.1415926536
 #define M_PI2          1.570796327
+#define M_PI           3.1415926536
 #define M_PI32         4.71238898
 #define M_PI42         6.283185307
 #endif
@@ -179,5 +179,7 @@ extern char lang_onscreen[];
 extern char launcher_program[];
 
 extern char *xkb_names[5];
+
+extern int menuwin_free_zone;
 
 #endif // _H_GLOBALS_

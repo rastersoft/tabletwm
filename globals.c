@@ -26,6 +26,8 @@ uint16_t height;
 
 struct wincache_element wincache_list;
 
+int menuwin_free_zone = 0;
+
 char keep_running;
 
 xcb_connection_t *conn;
@@ -39,8 +41,8 @@ struct key_element *keyboard_lowercase;
 int keyboard_blocks;
 int keyboard_current_block;
 
-char lang_xkbmap[32]={0};
-char lang_onscreen[32]={0};
-char launcher_program[256]={0};
+char lang_xkbmap[32] = {0};
+char lang_onscreen[32] = {0};
+char launcher_program[256] = {0};
 
-char *xkb_names[5]={NULL,NULL,NULL,NULL,NULL};
+char *xkb_names[5]={NULL, NULL, NULL, NULL, NULL};

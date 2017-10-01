@@ -742,7 +742,7 @@ void menuwin_paint_button(cairo_t *cr, int xo, int yo, int wo, int ho, float r, 
 
 void menuwin_grab_mouse() {
 
-	if (key_win.mouse_grabed==0) {
+	if (key_win.mouse_grabed == 0) {
 		xcb_grab_pointer_cookie_t grab_cookie;
 		xcb_grab_pointer_reply_t *grab_reply;
 		uint16_t mask=XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_LEAVE_WINDOW;
@@ -750,8 +750,8 @@ void menuwin_grab_mouse() {
 		grab_cookie=xcb_grab_pointer(conn, 1, key_win.window, mask, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE, XCB_CURSOR_NONE, XCB_CURRENT_TIME);
 		xcb_flush(conn);
 		grab_reply=xcb_grab_pointer_reply(conn, grab_cookie, 0);
-		if (grab_reply->status==0) {
-			key_win.mouse_grabed=1;
+		if (grab_reply->status == 0) {
+			key_win.mouse_grabed = 1;
 		}
 		free(grab_reply);
 	}
@@ -759,12 +759,12 @@ void menuwin_grab_mouse() {
 
 void menuwin_ungrab_mouse(char do_flush) {
 
-	if (key_win.mouse_grabed==1) {
+	if (key_win.mouse_grabed == 1) {
 		xcb_ungrab_pointer(conn, XCB_CURRENT_TIME);
 		if (do_flush) {
 			xcb_flush(conn);
 		}
-		key_win.mouse_grabed=0;
+		key_win.mouse_grabed = 0;
 	}
 }
 
@@ -777,8 +777,11 @@ void menuwin_set_window() {
 	if (key_win.possition == 1) {
 		if (key_win.has_keyboard & 0x01) { // keyboard enabled?
 			// Grab the mouse to avoid other windows to receive events
-
-			menuwin_grab_mouse();
+            if (key_win.resize_with_keyboard == 0) {
+			    menuwin_grab_mouse();
+            } else {
+                menuwin_ungrab_mouse(1);
+            }
 
 			v[2] = width;
 			v[3] = 5 * height / KEYS_H_DIVISOR;

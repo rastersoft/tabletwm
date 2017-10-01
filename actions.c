@@ -341,7 +341,7 @@ void action_key(xcb_generic_event_t *e) {
 	}
 
 	// SHUTDOWN
-	if ((ee->detail == 124) || ((ee->detail == 135) && (!(ee->state & XCB_MOD_MASK_CONTROL)) && ((ee->state & XCB_MOD_MASK_1)))) {
+	if ((ee->detail == 124) || ((ee->detail == 135) && (!(ee->state & XCB_MOD_MASK_CONTROL)) && (!(ee->state & XCB_MOD_MASK_SHIFT)) && ((ee->state & XCB_MOD_MASK_1)))) {
 		if(shutdown_win.cache->mapped == 0) {
 			shutdown_show();
 		}

@@ -1,5 +1,7 @@
 HISTORY OF VERSIONS
 ===================
+* 0.28 (2017/10/01)
+   * Fixed all cases with the MENU key
 * 0.27 (2017/10/01)
    * Allows to resize the window when the screen keyboard is visible
 * 0.26 (2017/09/30)

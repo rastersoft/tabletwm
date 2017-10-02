@@ -6,7 +6,7 @@ PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 DESTDIR=
 
-tabletwm: actions.o globals.o init.o menuwin.o shutdown.o support.o tabletwm.o wincache.o 
+tabletwm: actions.o globals.o init.o menuwin.o shutdown.o support.o tabletwm.o wincache.o
 	$(LN) -o tabletwm actions.o globals.o init.o menuwin.o shutdown.o support.o tabletwm.o wincache.o  `pkg-config --libs xcb xcb-util xcb-randr xcb-icccm xcb-keysyms xcb-xtest cairo xkbcommon`
 	strip tabletwm
 
@@ -54,4 +54,3 @@ tabletwm.o: tabletwm.c menuwin.h actions.h support.h globals.h init.h
 
 wincache.o: wincache.c wincache.h globals.h
 	$(CC) -o wincache.o wincache.c
-

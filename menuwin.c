@@ -98,8 +98,20 @@ void fill_keycodes() {
 		keyboard_lowercase=(struct key_element *)malloc(max_keys*sizeof(struct key_element));
 		memset(keyboard_lowercase, 0, max_keys*sizeof(struct key_element));
 		for(counter=0;(!feof(keyboard_file))&&(counter<max_keys);counter++) {
-			retval=fscanf(keyboard_file, "%s %d %d", command, &w, &h);
-			if(retval!=3) {
+			retval = fscanf(keyboard_file, "%s", command);
+			printf("Leido '%s'\n", command);
+			if (retval != 1) {
+				counter--;
+				continue;
+			}
+			if (command[0] == '#') {
+				char tmpline[1001];
+				fgets(tmpline,1000,keyboard_file);
+				counter--;
+				continue;
+			}
+			retval = fscanf(keyboard_file, "%d %d", &w, &h);
+			if(retval!=2) {
 				break;
 			}
 			keyboard_lowercase[counter].size=KEYS_FONT_SIZE;
@@ -108,6 +120,7 @@ void fill_keycodes() {
 			keyboard_lowercase[counter].h=h;
 			keyboard_lowercase[counter].keycode=0;
 			keyboard_lowercase[counter].modifier=0;
+			keyboard_lowercase[counter].ctrl=false;
 			if (!strcmp(command, "BLANK")) {
 				keyboard_lowercase[counter].type=KEY_BLANK;
 				keyboard_lowercase[counter].keysym=0;
@@ -137,6 +150,16 @@ void fill_keycodes() {
 						keyboard_lowercase[counter].g_element[retval]=0;// terminate string
 					}
 				}
+			} else if (!strcmp(command, "KEYCTRL")) {
+				keyboard_lowercase[counter].ctrl=true;
+				keyboard_lowercase[counter].type=KEY_PH;
+				retval=fscanf(keyboard_file, "%s", keysym_asc);
+				keyboard_lowercase[counter].keysym=xkb_keysym_from_name(keysym_asc, 0);
+				retval=xkb_keysym_to_utf8(keyboard_lowercase[counter].keysym, keyboard_lowercase[counter].g_element, 7);
+				if (retval==-1) {
+					retval++;
+				}
+				keyboard_lowercase[counter].g_element[retval]=0;// terminate string
 			} else if (!strcmp(command, "TAB")) {
 				keyboard_lowercase[counter].type=KEY_TAB;
 				keyboard_lowercase[counter].keysym=XK_Tab;
@@ -162,6 +185,8 @@ void fill_keycodes() {
 					keyboard_lowercase[counter].modifier=2;
 				} else if (!strcmp(command, "LETTERS")) {
 					keyboard_lowercase[counter].modifier=3;
+				} else if (!strcmp(command, "CTRL")) {
+					keyboard_lowercase[counter].modifier=4;
 				}
 				if (jumpto>=keyboard_blocks) {
 					printf("Ilegal jump to block %d (max. is %d)\n", jumpto, keyboard_blocks);
@@ -615,6 +640,12 @@ void menuwin_paint_keyboard(cairo_t *cr) {
 						cairo_move_to(cr, -te.x_bearing-(te.width/2.0), 0.35);
 						cairo_show_text(cr, "abc");
 						cairo_set_font_size(cr, KEYS_FONT_SIZE);
+					} else if (keyboard_lowercase[counter].modifier==4) { // Jump to CTRL
+						cairo_set_font_size(cr, KEYS_JUMP_FONT_SIZE);
+						cairo_text_extents(cr, "Ctrl", &te);
+						cairo_move_to(cr, -te.x_bearing-(te.width/2.0), 0.35);
+						cairo_show_text(cr, "Ctrl");
+						cairo_set_font_size(cr, KEYS_FONT_SIZE);
 					} else { // Generic symbol
 						cairo_set_font_size(cr, KEYS_JUMP_FONT_SIZE);
 						cairo_text_extents(cr, "...", &te);
@@ -875,10 +906,16 @@ void menuwin_press_key_at(int x, int y) {
 						keyboard_current_block=keyboard_lowercase[i].keycode;
 						menuwin_expose(NULL);
 					} else {
-						xcb_keycode_t keycode=keyboard_lowercase[i].keycode;
-						xcb_keycode_t keymod =keyboard_lowercase[i].modifier;
+						xcb_keycode_t keycode = keyboard_lowercase[i].keycode;
+						xcb_keycode_t keymod  = keyboard_lowercase[i].modifier;
+						bool use_ctrl = keyboard_lowercase[i].ctrl;
 						if (keycode!=0) {
 							printf("Emiting keycode %d with modifier %d\n", keycode, keymod);
+							if (use_ctrl) {
+								xcb_test_fake_input(conn, XCB_KEY_PRESS, 37, XCB_CURRENT_TIME, XCB_NONE, 0, 0, 0);
+								xcb_flush(conn);
+								printf("Pulso CTRL\n");
+							}
 							if (keymod!=0) {
 								xcb_test_fake_input(conn, XCB_KEY_PRESS, keymod, XCB_CURRENT_TIME, XCB_NONE, 0, 0, 0);
 								xcb_flush(conn);
@@ -889,6 +926,10 @@ void menuwin_press_key_at(int x, int y) {
 							xcb_flush(conn);
 							if (keymod!=0) {
 								xcb_test_fake_input(conn, XCB_KEY_RELEASE, keymod, XCB_CURRENT_TIME, XCB_NONE, 0, 0, 0);
+								xcb_flush(conn);
+							}
+							if (use_ctrl) {
+								xcb_test_fake_input(conn, XCB_KEY_RELEASE, 37, XCB_CURRENT_TIME, XCB_NONE, 0, 0, 0);
 								xcb_flush(conn);
 							}
 						}

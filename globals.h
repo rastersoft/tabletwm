@@ -27,9 +27,10 @@
 #include <X11/keysym.h>
 #include <libintl.h>
 #include <locale.h>
+#include <stdbool.h>
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 28
+#define VERSION_MINOR 29
 
 #define TWM_NAME "tabletwm"
 
@@ -156,6 +157,7 @@ struct key_element {
 	xcb_keycode_t keycode;
 	xcb_keycode_t modifier;
 	xcb_keysym_t  keysym;
+	bool ctrl;
 	char w;
 	char h;
 	char g_element[8]; // to allow UTF-8 elements

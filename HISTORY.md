@@ -1,5 +1,7 @@
 ## HISTORY OF VERSIONS ##
 
+* Version 0.29 (2017/10/03)
+  * Added support for Ctrl+letter
 * Version 0.28 (2017/10/01)
   * Fixed all cases with the MENU key
 * Version 0.27 (2017/10/01)

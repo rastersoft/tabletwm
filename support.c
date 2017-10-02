@@ -489,7 +489,10 @@ void support_launch_manager() {
 		value=XCB_STACK_MODE_ABOVE;
 		xcb_configure_window (conn,window, XCB_CONFIG_WINDOW_STACK_MODE, &value);
 	}
-	key_win.possition=0;
+	key_win.possition = 0;
+    key_win.enabled_by_mouse = 0;
+    key_win.resize_with_keyboard = 0;
+    support_resize_all_windows();
 	support_send_dock_up(NULL,NULL);
 	menuwin_set_window(); // hide the keyboard when showing the launcher
 }

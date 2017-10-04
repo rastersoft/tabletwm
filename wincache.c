@@ -97,6 +97,9 @@ void wincache_destroy_element(uint32_t window) {
 		if (element->next != NULL) {
 			element->next->prev = element->prev;
 		}
+		if (element == wincache_list) {
+			wincache_list = element->next;
+		}
 		free(element->instance);
 		free(element->class_name);
 		free(element);
@@ -197,9 +200,9 @@ struct wincache_element *wincache_fill_element(uint32_t window, uint32_t flags) 
 			} else {
 				element->class_name = strdup("");
 				element->instance = strdup("");
+				free(wmclass);
 			}
 		}
-		free(wmclass);
 	}
 
 	if (flags & WINCACHE_HINTS) {
@@ -288,5 +291,6 @@ uint32_t wincache_find_launcher_window() {
 			return element->window;
 		}
 	}
+	free(final);
 	return 0;
 }

@@ -142,7 +142,7 @@ void init_tabletwm() {
 
 	wincache_init();
 
-	conn=xcb_connect(0, 0);
+	conn = xcb_connect(0, 0);
 	assert(conn);
 
 	scr = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
@@ -259,7 +259,7 @@ void destroy_tabletwm() {
 	shutdown_destroy();
 	wincache_destroy_element(key_win.window);
 	destroy_keycodes();
+	menuwin_destroy();
 	xcb_destroy_window(conn, key_win.window);
 	xcb_flush(conn);
-
 }

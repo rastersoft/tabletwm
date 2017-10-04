@@ -31,8 +31,6 @@
 void destroy_keycodes() {
 
 	free(keyboard_lowercase);
-	cairo_surface_destroy(key_win.surface);
-
 }
 
 void fill_keycodes() {
@@ -255,7 +253,7 @@ void fill_keycodes() {
 		xcb_keycode_t keycode_found;
 
 		xcb_keysym_t keysyms[4];
-		xcb_keycode_t keycode_shift;
+		xcb_keycode_t *keycode_shift;
 
 		struct lower_upper_t {xcb_keysym_t upper_first;
 				xcb_keysym_t upper_last;
@@ -270,7 +268,7 @@ void fill_keycodes() {
 			};
 		struct lower_upper_t *iter_lu;
 
-		keycode_shift = *xcb_key_symbols_get_keycode(symbols, XKB_KEY_Shift_L);
+		keycode_shift = xcb_key_symbols_get_keycode(symbols, XKB_KEY_Shift_L);
 		for(k = 0;k<max_keys;k++) { // and now we check each desired key with the keysymbol obtained
 			if ((keyboard_lowercase[k].keycode == 0) && (keyboard_lowercase[k].type != KEY_BLANK) && (keyboard_lowercase[k].type != KEY_JUMPTO)) {
 				// this key is not available in US keyboards; let's redefine a keycode for it
@@ -314,13 +312,14 @@ void fill_keycodes() {
 					}
 					if (keyboard_lowercase[j].keysym == keysyms[2]) {
 						keyboard_lowercase[j].keycode = keycode;
-						keyboard_lowercase[j].modifier = keycode_shift;
+						keyboard_lowercase[j].modifier = *keycode_shift;
 						continue;
 					}
 				}
 				keycode++;
 			}
 		}
+		free(keycode_shift);
 		xcb_key_symbols_free(symbols);
 	}
 
@@ -401,6 +400,10 @@ uint32_t init_utf8_to_keysym(unsigned char *data) {
 	return 0;
 }
 
+void menuwin_destroy() {
+
+	cairo_surface_destroy(key_win.surface);
+}
 
 void menuwin_init() {
 
@@ -568,10 +571,10 @@ void menuwin_paint_launcher(cairo_t *cr) {
 void menuwin_paint_keyboard(cairo_t *cr) {
 
 	int x, y;
-	int counter = 4*KEYS_PER_ROW*keyboard_current_block;
+	int counter = 4 * KEYS_PER_ROW * keyboard_current_block;
 	cairo_text_extents_t te;
-	for(y = 4;y>0;y--) {
-		for(x = 0;x<KEYS_PER_ROW;x++) {
+	for(y = 4; y > 0; y--) {
+		for(x = 0; x < KEYS_PER_ROW; x++) {
 			if (keyboard_lowercase[counter].type != KEY_BLANK) {
 				menuwin_paint_button(cr, x, y, keyboard_lowercase[counter].w, keyboard_lowercase[counter].h, 0.9, 0.9, 0.9);
 				cairo_set_line_width(cr, 0.12);
@@ -1160,6 +1163,6 @@ void menuwin_expose(xcb_expose_event_t *ee) {
 	cairo_paint(cr_screen);
 	xcb_flush(conn);
 	cairo_destroy(cr);
-	cairo_surface_destroy(surface_tmp);
 	cairo_destroy(cr_screen);
+	cairo_surface_destroy(surface_tmp);
 }

@@ -149,7 +149,7 @@ void action_configure_request(xcb_generic_event_t *e) {
 
 	xcb_configure_request_event_t *ee = (xcb_configure_request_event_t *)e;
 
-	uint32_t v[7];
+	uint32_t v[7] = {0, 0, 0, 0, 0, 0, 0};
 	int i;
 	int nx, ny, nw, nh;
 #ifdef DEBUG
@@ -371,8 +371,9 @@ void action_key(xcb_generic_event_t *e) {
 	}
 
 #ifdef DEBUG
-	// Alt+F5
-	if ((ee->detail == 71) && (ee->state & XCB_MOD_MASK_1)) {
+	// MENU + SHIFT + CTRL
+	if ((ee->detail == 135) && ((ee->state & XCB_MOD_MASK_CONTROL)) && ((ee->state & XCB_MOD_MASK_SHIFT)) && (!(ee->state & XCB_MOD_MASK_1))) {
+	//if ((ee->detail == 71) && (ee->state & XCB_MOD_MASK_1)) {
 		keep_running = 0;
 		return;
 	}

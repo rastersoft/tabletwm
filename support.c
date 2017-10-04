@@ -477,11 +477,11 @@ void support_launch_manager() {
 	uint32_t window;
 	uint32_t value;
 
-	window=wincache_find_launcher_window();
+	window = wincache_find_launcher_window();
 
-	if (window==0) { // the launcher has not been launched yet; launch it
-		f=fork();
-		if (f==0) {
+	if (window == 0) { // the launcher has not been launched yet; launch it
+		f = fork();
+		if (f == 0) {
 			system(launcher_program);
 			exit(0);
 		}

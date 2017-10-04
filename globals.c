@@ -24,8 +24,6 @@ xcb_atom_t atoms[TWM_ATOM_LAST_VALUE];
 uint16_t width;
 uint16_t height;
 
-struct wincache_element wincache_list;
-
 int menuwin_free_zone = 0;
 
 char keep_running;

@@ -59,7 +59,7 @@ void shutdown_init() {
 		xcb_configure_window(conn,shutdown_win.window,value_mask,v);
 		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,shutdown_win.window,atoms[TWM_ATOM__NET_WM_NAME],XCB_ATOM_STRING,8,strlen(TWM_NAME),TWM_NAME);
 		xcb_change_property(conn,XCB_PROP_MODE_REPLACE,shutdown_win.window,atoms[TWM_ATOM__NET_WM_WINDOW_TYPE],XCB_ATOM_ATOM,32,1,&atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK]);
-		shutdown_win.cache=wincache_fill_element(shutdown_win.window);
+		shutdown_win.cache=wincache_fill_element(shutdown_win.window, WINCACHE_ALL);
 		shutdown_win.cache->mapped=0;
 		xcb_flush(conn);
 		shutdown_win.surface=cairo_xcb_surface_create(conn,shutdown_win.window,visual_type,width/2,height/2);

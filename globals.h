@@ -103,30 +103,6 @@ struct support_new_size {
 	uint8_t force_change;
 };
 
-struct wincache_element {
-
-	struct wincache_element *prev;
-	struct wincache_element *next;
-
-	char    *class_name;
-	char    *instance;
-	uint32_t window;
-	uint32_t type;
-	uint32_t min_width;
-	uint32_t min_height;
-	uint32_t max_width;
-	uint32_t max_height;
-	uint32_t cur_width;
-	uint32_t cur_height;
-	uint8_t  filled;
-	uint8_t  mapped;
-	uint8_t  resizable;
-	uint8_t  is_transient;
-	uint8_t  input_flag;
-};
-
-extern struct wincache_element wincache_list;
-
 extern xcb_atom_t atoms[];
 
 extern uint16_t width;

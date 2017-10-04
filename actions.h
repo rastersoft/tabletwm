@@ -36,4 +36,6 @@ void action_mouse_click(xcb_generic_event_t *e);
 void action_mouse_leave(xcb_generic_event_t *e);
 void action_mouse_enter(xcb_generic_event_t *e);
 
+void action_set_property(xcb_generic_event_t *e);
+
 #endif //_H_ACTIONS_

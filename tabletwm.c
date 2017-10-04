@@ -155,6 +155,9 @@ int main() {
 					case(XCB_BUTTON_RELEASE):
 						action_mouse_click(e);
 					break;
+					case(XCB_PROPERTY_NOTIFY):
+						action_set_property(e);
+					break;
 					case(0): {
 						xcb_generic_error_t *ee = (xcb_generic_error_t *)e;
 						printf("error event type %d\n",ee->error_code);

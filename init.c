@@ -88,7 +88,7 @@ void init_tabletwm() {
 	memset(&shutdown_win, 0, sizeof(shutdown_win));
 	xcb_void_cookie_t void_cookie;
 	xcb_intern_atom_cookie_t atom_cookie[TWM_ATOM_LAST_VALUE];
-	uint32_t v[] = {XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
+	uint32_t v[] = {XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_PROPERTY_CHANGE};
 	int i;
 
 	char *a_atoms[TWM_ATOM_LAST_VALUE] = {

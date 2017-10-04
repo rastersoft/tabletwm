@@ -85,7 +85,7 @@ void action_map_request(xcb_generic_event_t *e) {
 #ifdef DEBUG
 	printf("Mapping %d\n", ee->window);
 #endif
-	element = wincache_fill_element(ee->window);
+	element = wincache_fill_element(ee->window, WINCACHE_ALL);
 	if (element) {
 		element->mapped = 1;
 	}
@@ -139,7 +139,7 @@ void action_configure_notify(xcb_generic_event_t *e) {
 	printf("Configure notify %d\n", ee->window);
 #endif
 
-	element = wincache_fill_element(ee->window);
+	element = wincache_fill_element(ee->window, WINCACHE_ALL);
 	if ((element) && (element->type != atoms[TWM_ATOM__NET_WM_WINDOW_TYPE_DOCK])) {
 		support_send_dock_up(NULL, NULL); // after a configure notify for a non-dock window, ensure that the docks are always on top
 	}
@@ -265,6 +265,28 @@ void action_mouse_click(xcb_generic_event_t *e) {
 	}
 	if (ee->event == shutdown_win.window) {
 		shutdown_press(ee->event_x, ee->event_y);
+	}
+}
+
+void action_set_property(xcb_generic_event_t *e) {
+	xcb_property_notify_event_t *ee = (xcb_property_notify_event_t *)e;
+	uint32_t flags = 0;
+	switch (ee->atom) {
+	case TWM_ATOM_WM_TRANSIENT_FOR:
+		flags = WINCACHE_TRANSIENT_FOR;
+	break;
+	case TWM_ATOM__NET_WM_WINDOW_TYPE:
+		flags = WINCACHE_WINDOW_TYPE;
+	break;
+	case TWM_ATOM_WM_NORMAL_HINTS:
+		flags = WINCACHE_HINTS;
+	break;
+	case TWM_ATOM_WM_HINTS:
+		flags = WINCACHE_WINDOW_HINTS;
+	break;
+	}
+	if (flags != 0) {
+		wincache_fill_element(ee->window, flags);
 	}
 }
 

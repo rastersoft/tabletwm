@@ -237,7 +237,7 @@ void init_tabletwm() {
 			do {
 				len = strnlen(p, max);
 				if (*p!=0) {
-					xkb_names[counter++]=strdup(p);
+					xkb_names[counter++] = strdup(p);
 				}
 				p+=len+1;
 				max-=len+1;
@@ -262,4 +262,8 @@ void destroy_tabletwm() {
 	menuwin_destroy();
 	xcb_destroy_window(conn, key_win.window);
 	xcb_flush(conn);
+	cairo_debug_reset_static_data ();
+	for(int i = 0; i < 5; i++) {
+		free(xkb_names[i]);
+	}
 }

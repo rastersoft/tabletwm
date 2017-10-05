@@ -1,6 +1,5 @@
-CC=gcc -c
+CC=gcc -c -O2
 LN=gcc
-CFLAGS= -O2
 
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin

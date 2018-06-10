@@ -1,5 +1,4 @@
-TabletWM
-========
+# TabletWM
 
 Version 0.26
 
@@ -120,7 +119,7 @@ TabletWM is distributed under the terms of the GPLv2 or (at your option) any lat
 
 ## Author
 
-TabletWM is developed by Raster Software Vigo (Sergio Costas)
-
-http://www.rastersoft.com
-raster@rastersoft.com
+Sergio Costas Rodriguez  
+rastersoft@gmail.com  
+http://www.rastersoft.com  
+https://gitlab.com/rastersoft/tabletwm
